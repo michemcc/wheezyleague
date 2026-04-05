@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import './HomePage.css'
 
-const APP_VERSION = '2026.4.0'
+const APP_VERSION = '2026.5.0'
 
 const FEATURES = [
   { icon:'🏆', title:'Challenges',    desc:'Monthly missions built for asthmatic runners. Any pace, any distance, just show up.', link:'/challenges', color:'gold' },
@@ -59,9 +59,9 @@ export default function HomePage() {
             </div>
 
             <h1 className="hero-title">
-              THE<br />
+              <span className="hero-title-line">THE</span><br />
               <span className="hero-title-accent">WHEEZY</span><br />
-              LEAGUE
+              <span className="hero-title-line">LEAGUE</span>
             </h1>
 
             <p className="hero-sub">

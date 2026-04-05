@@ -68,12 +68,16 @@
   font-size: clamp(3.5rem, 8vw, 7rem);
   font-weight: 700;
   line-height: 0.95;
-  color: #EBF0FF;  /* always bright — hero is always dark */
+  color: #EBF0FF;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin-bottom: 1.25rem;
-  /* Neon text shadow */
   text-shadow: 0 0 40px rgba(232,240,255,0.12);
+}
+/* Explicit colour on each line so nothing can override */
+.hero-title-line {
+  color: #EBF0FF;
+  display: inline;
 }
 .hero-title-accent {
   color: var(--neon-orange);

@@ -9,8 +9,8 @@ const rateLimit = require('express-rate-limit')
 
 const { authMiddleware, requireMember } = require('./middleware/auth')
 
-const app  = express()
-const PORT = process.env.PORT || 4000
+const app    = express()
+const PORT   = process.env.PORT || 4000
 const isProd = process.env.NODE_ENV === 'production'
 
 // ── Security ──────────────────────────────────────────────────────────────────
@@ -18,10 +18,13 @@ app.use(helmet())
 app.use(express.json({ limit: '512kb' }))
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000').split(',').map(s => s.trim())
+// On Vercel (monorepo): frontend and API share the same origin, so CORS is a
+// no-op for browser requests. Still configured for local dev + external callers.
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
+  .split(',').map(s => s.trim())
+
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow server-to-server (no origin) and listed origins
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true)
     cb(new Error(`CORS: origin '${origin}' not allowed`))
   },
@@ -42,14 +45,14 @@ app.use('/api', rateLimit({
   message: { error: 'Too many requests. Please slow down.' },
 }))
 
-// ── Health ────────────────────────────────────────────────────────────────────
+// ── Health check (public — no auth required) ──────────────────────────────────
 app.get('/health', (_req, res) => res.json({
-  ok: true,
+  ok:      true,
   version: require('../package.json').version,
-  env: process.env.NODE_ENV,
+  env:     process.env.NODE_ENV,
 }))
 
-// ── Routes (auth required on all /api/* routes) ───────────────────────────────
+// ── API routes ────────────────────────────────────────────────────────────────
 app.use('/api/users',      authMiddleware, requireMember, require('./routes/users'))
 app.use('/api/posts',      authMiddleware, requireMember, require('./routes/posts'))
 app.use('/api/challenges', authMiddleware, requireMember, require('./routes/challenges'))
@@ -69,16 +72,22 @@ app.use((err, _req, res, _next) => {
   res.status(status).json({
     error: status === 401 ? 'Unauthorized'
          : status === 403 ? 'Forbidden'
-         : isProd        ? 'Internal server error'
+         : isProd         ? 'Internal server error'
          : err.message,
   })
 })
 
-app.listen(PORT, () => {
-  console.log(`\n🫁  The Wheezy League API  →  http://localhost:${PORT}`)
-  console.log(`    v${require('../package.json').version}  ·  ${process.env.NODE_ENV}`)
-  console.log(`    Auth0: ${process.env.AUTH0_DOMAIN || '⚠ not set'}`)
-  console.log(`    DB:    ${process.env.DATABASE_URL ? '✓ configured' : '◌ in-memory (dev only)'}\n`)
-})
+// ── Local dev server ──────────────────────────────────────────────────────────
+// On Vercel, the module is imported by api/index.js — listen is never called.
+// Locally, running `node src/index.js` or `npm run dev` hits this block.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n🫁  The Wheezy League API  →  http://localhost:${PORT}`)
+    console.log(`    v${require('../package.json').version}  ·  ${process.env.NODE_ENV || 'development'}`)
+    console.log(`    Auth0:  ${process.env.AUTH0_DOMAIN    || '⚠  AUTH0_DOMAIN not set'}`)
+    console.log(`    DB:     ${process.env.SUPABASE_URL    ? '✓ Supabase configured' : '◌ in-memory (demo only)'}\n`)
+  })
+}
 
+// Export for Vercel (api/index.js) and tests
 module.exports = app

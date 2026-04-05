@@ -189,7 +189,7 @@ export default function Navbar() {
                       </div>
                       <div className="panel-divider" />
                       <div className="panel-item panel-item--version">
-                        <span>The Wheezy League</span><span className="version-tag">v2026.4.0</span>
+                        <span>The Wheezy League</span><span className="version-tag">v2026.5.0</span>
                       </div>
                       <div className="panel-divider" />
                       <button className="panel-item panel-item--danger"

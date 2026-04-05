@@ -302,15 +302,11 @@ $$;
 
 ---
 
-## Part 3 — Deploy to Railway
+## Part 3 — Set variables on Vercel
 
-### 3.1 Create a Railway service
+### 3.1 Set environment variables on Vercel
 
-1. [railway.app](https://railway.app) → **New Project → GitHub Repo**
-2. Select your repo → set **Root Directory** to `backend`
-3. Railway auto-detects Node.js and runs `npm start`
-
-### 3.2 Set environment variables in Railway
+In Vercel → Project → **Settings → Environment Variables**:
 
 ```
 NODE_ENV=production
@@ -319,10 +315,11 @@ AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_AUDIENCE=https://api.wheezyleague.run
 SUPABASE_URL=https://[REF].supabase.co
 SUPABASE_SERVICE_KEY=your_service_role_key
-STRAVA_CLIENT_ID=         (if using)
-STRAVA_CLIENT_SECRET=     (if using)
-MAPMYRUN_CLIENT_ID=       (if using)
-MAPMYRUN_CLIENT_SECRET=   (if using)
+VITE_DATA_MODE=real
+VITE_API_BASE_URL=/api
+VITE_AUTH0_DOMAIN=your-tenant.auth0.com
+VITE_AUTH0_CLIENT_ID=your_spa_client_id
+VITE_AUTH0_AUDIENCE=https://api.wheezyleague.run
 ```
 
 ### 3.3 Note your Railway URL

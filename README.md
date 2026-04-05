@@ -1,124 +1,90 @@
 # 🫁 The Wheezy League
 
-**Version 2026.4.0**
+**v2026.5.0** — Asthma-friendly run club platform.
 
 > Run with every breath.
 
-The Wheezy League is an asthma-friendly run club platform built with React + Vite on the frontend and Node.js + Express on the backend. Features a full gamification system, BreathZone symptom tracker, community feed, challenges, safe routes, and integrations with Strava and MapMyRun.
+---
+
+## Stack
+
+| Layer | Tech |
+|-------|------|
+| Frontend | React 18 + Vite |
+| Auth | Auth0 |
+| Backend | Node.js + Express (Vercel serverless) |
+| Database | Supabase (PostgreSQL) |
+| Deployment | Vercel — **one project, frontend + backend** |
 
 ---
 
-## Quick Start
+## Quick start (local)
 
 ```bash
-# Frontend (demo mode — no backend needed)
+# 1. Frontend — demo mode, no backend needed
 npm install
-cp .env.example .env.local   # fill in Auth0 values
-npm run dev                  # → http://localhost:3000
+cp .env.example .env.local        # fill in Auth0 values
+npm run dev                        # → http://localhost:3000
 
-# Backend (optional — for live data)
+# 2. Backend — only needed when VITE_DATA_MODE=real
 cd backend
 npm install
-cp .env.example .env         # fill in Auth0 + DB values
-npm run dev                  # → http://localhost:4000
+cp .env.example .env               # fill in Auth0 + Supabase values
+npm run dev                        # → http://localhost:4000
 ```
 
 ---
 
-## Project Structure
+## Deploy to Vercel
+
+Everything — frontend **and** backend — deploys to one Vercel project.
+No Railway. No separate backend service.
+
+See [`docs/DEPLOY_VERCEL.md`](docs/DEPLOY_VERCEL.md) for the full guide.
+
+---
+
+## Project structure
 
 ```
 wheezyleague/
-├── src/                    # React frontend (Vite)
-│   ├── components/         # Navbar, Footer, modals, auth guards
-│   ├── context/            # DemoContext (dark mode, demo toggle, avatar)
-│   ├── data/               # Mock data for demo mode
-│   ├── hooks/              # useAuth (roles + org from Auth0)
-│   ├── pages/              # One page per route
-│   ├── services/           # dataService.js — demo/real API toggle
-│   └── styles/             # globals.css, components.css
-│
+├── api/
+│   └── index.js          ← Vercel serverless entry (re-exports backend app)
+├── src/                  ← React frontend (Vite)
+│   ├── components/       ← Navbar, Footer, modals, auth guards
+│   ├── context/          ← DemoContext (dark mode, demo toggle, avatar)
+│   ├── data/             ← Mock data for demo mode
+│   ├── hooks/            ← useAuth (roles + org from Auth0)
+│   ├── pages/            ← One page per route
+│   ├── services/         ← dataService.js — demo / real API toggle
+│   └── styles/           ← globals.css, components.css
 ├── backend/
 │   └── src/
-│       ├── db.js           # Data access layer (swap for Supabase here)
-│       ├── middleware/     # Auth0 JWT + role checking
-│       └── routes/         # users, posts, challenges, routes, symptoms
-│
-├── docs/                   # Deployment + integration guides
-├── vercel.json             # Vercel SPA routing + headers
+│       ├── index.js      ← Express app (exported for Vercel, listen for local)
+│       ├── db.js         ← Data access layer (swap internals for Supabase)
+│       ├── middleware/   ← Auth0 JWT + role checking
+│       └── routes/       ← users, posts, challenges, routes, symptoms
+├── docs/
+│   ├── DEPLOY_VERCEL.md  ← Full Vercel deployment guide ← START HERE
+│   ├── DEPLOY_SUPABASE.md← Supabase schema + migration guide
+│   └── AUTH0_SETUP.md    ← Auth0 roles, orgs, Post-Login Action
+├── vercel.json           ← SPA rewrites + /api route + security headers
 └── vite.config.js
 ```
 
 ---
 
-## Deployment
+## Demo vs Live mode
 
-### Frontend → Vercel (recommended)
+The banner toggle switches data sources at runtime:
 
-1. Push to GitHub
-2. [Import on Vercel](https://vercel.com/new) — select repo, framework auto-detected as Vite
-3. Set environment variables (see `.env.example`):
-   ```
-   VITE_AUTH0_DOMAIN
-   VITE_AUTH0_CLIENT_ID
-   VITE_AUTH0_AUDIENCE
-   VITE_DATA_MODE=real
-   VITE_API_BASE_URL=https://your-backend.railway.app/api
-   ```
-4. Deploy — done. `vercel.json` handles SPA routing automatically.
-
-### Backend → Railway
-
-1. [railway.app](https://railway.app) → New Project → GitHub repo → set Root Directory to `backend`
-2. Set env vars (see `backend/.env.example`)
-3. Copy the Railway URL into `VITE_API_BASE_URL` on Vercel
-
-See [`docs/DEPLOY_SUPABASE.md`](docs/DEPLOY_SUPABASE.md) for adding a real Supabase PostgreSQL database.
-
----
-
-## Auth0 Setup
-
-See [`docs/AUTH0_SETUP.md`](docs/AUTH0_SETUP.md) for the full guide including:
-- Creating the `WheezyLeague-Member` role
-- The Post-Login Action that injects roles into tokens
-- Setting up Organizations for partner run clubs
-
----
-
-## Demo vs Live Mode
-
-Toggle with `VITE_DATA_MODE`:
-
-| Mode | Data source | Backend needed? |
-|------|-------------|-----------------|
+| Mode | Source | Backend needed? |
+|------|--------|-----------------|
 | `demo` | `src/data/*.js` mock files | No |
-| `real` | Your Express API at `VITE_API_BASE_URL` | Yes |
-
-The toggle also appears in the UI banner and mobile drawer — safe for dev presentations.
+| `real` | Express API at `VITE_API_BASE_URL` | Yes |
 
 ---
 
 ## Versioning
 
-Calendar versioning: `YYYY.MINOR.PATCH`
-- `YYYY` — release year
-- `MINOR` — feature releases within the year
-- `PATCH` — bug fixes
-
----
-
-## Tech Stack
-
-| Layer | Tech |
-|-------|------|
-| Frontend | React 18, Vite, React Router v6 |
-| Auth | Auth0 (`@auth0/auth0-react`) |
-| Backend | Node.js, Express |
-| Database | In-memory (dev) → Supabase PostgreSQL (prod) |
-| Deployment | Vercel (frontend) + Railway (backend) |
-| Integrations | Strava API, MapMyRun (Under Armour Connected Fitness) |
-
----
-
-*The Wheezy League v2026.4.0 — Run with every breath. 🫁*
+`YYYY.MINOR.PATCH` — calendar versioning. Current: **v2026.5.0**

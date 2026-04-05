@@ -79,8 +79,9 @@
 .logo-name {
   font-family: var(--font-display);
   font-size: 0.98rem; font-weight: 700; line-height: 1;
-  white-space: nowrap; letter-spacing: 0.02em; text-transform: uppercase;
-  /* Explicit dark in light mode, light in dark mode */
+  /* flex row removes any whitespace gap between child spans */
+  display: inline-flex; align-items: baseline;
+  letter-spacing: 0.02em; text-transform: uppercase;
   color: #111827;
 }
 .dark .logo-name { color: #E8F0FF; }
@@ -128,13 +129,13 @@
 .nav-xp-pill {
   display: flex; align-items: center; gap: 0.35rem;
   padding: 0.22rem 0.6rem;
-  background: rgba(255,210,63,0.12); border: 1px solid rgba(255,210,63,0.3);
+  background: #FFFBEB; border: 1px solid #D97706;
   border-radius: var(--r-xs); flex-shrink: 0;
 }
-.dark .nav-xp-pill { background: rgba(255,210,63,0.08); border-color: rgba(255,210,63,0.2); }
-.nav-xp-lv { font-family: var(--font-mono); font-size: .6rem; color: #92400e; white-space: nowrap; letter-spacing: 0.08em; }
+.dark .nav-xp-pill { background: rgba(255,210,63,0.1); border-color: rgba(255,210,63,0.35); }
+.nav-xp-lv { font-family: var(--font-mono); font-size: .6rem; color: #92400E; font-weight: 700; white-space: nowrap; letter-spacing: 0.08em; }
 .dark .nav-xp-lv { color: var(--neon-gold); }
-.nav-xp-track { width: 36px; height: 3px; background: rgba(255,210,63,0.2); border-radius: 1px; overflow: hidden; }
+.nav-xp-track { width: 36px; height: 3px; background: #FDE68A; border-radius: 1px; overflow: hidden; }
 .nav-xp-fill  { height: 100%; background: var(--neon-gold); border-radius: 1px; transition: width 1s var(--ease); }
 
 /* Icon button (bell) */
