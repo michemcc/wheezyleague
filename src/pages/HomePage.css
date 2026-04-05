@@ -60,7 +60,7 @@
   animation: livePulse 1.8s infinite;
 }
 .hud-dot--green { background: var(--neon-green); box-shadow: var(--glow-green-sm); }
-.hud-label { color: var(--text-3); }
+.hud-label { color: rgba(235,240,255,0.5); }
 .hud-ver   { color: var(--neon-orange); font-size: 0.62rem; }
 
 .hero-title {
@@ -68,7 +68,7 @@
   font-size: clamp(3.5rem, 8vw, 7rem);
   font-weight: 700;
   line-height: 0.95;
-  color: var(--text-1);
+  color: #EBF0FF;  /* always bright — hero is always dark */
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin-bottom: 1.25rem;
@@ -83,7 +83,7 @@
 
 .hero-sub {
   font-size: clamp(0.95rem,1.8vw,1.1rem);
-  color: var(--text-3);
+  color: rgba(235,240,255,0.65);
   line-height: 1.65;
   max-width: 420px;
   margin-bottom: 2rem;
@@ -102,7 +102,7 @@
 }
 .hud-stat { display: flex; flex-direction: column; }
 .hud-stat-num { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--neon-gold); line-height: 1; text-shadow: var(--glow-gold-sm); letter-spacing: 0.02em; }
-.hud-stat-lbl { font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-4); margin-top: 0.18rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.hud-stat-lbl { font-family: var(--font-mono); font-size: 0.58rem; color: rgba(235,240,255,0.35); margin-top: 0.18rem; letter-spacing: 0.1em; text-transform: uppercase; }
 
 /* HUD Dashboard card (right column) */
 .hero-hud-card {
@@ -114,14 +114,14 @@
   display: flex; flex-direction: column; gap: 1rem;
 }
 .hud-card-header { display: flex; justify-content: space-between; align-items: center; }
-.hud-card-title  { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em; color: var(--text-4); }
+.hud-card-title  { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em; color: rgba(235,240,255,0.35); }
 .hud-live { display: flex; align-items: center; gap: 0.38rem; font-family: var(--font-mono); font-size: 0.6rem; color: var(--neon-green); letter-spacing: 0.1em; }
 
 .hud-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
 .hud-metric  { display: flex; flex-direction: column; gap: 0.12rem; padding: 0.65rem 0.75rem; background: var(--surface-2); border-radius: var(--r-sm); border: 1px solid var(--border); }
-.hud-metric-val { font-family: var(--font-display); font-size: 1.55rem; font-weight: 700; color: var(--text-1); line-height: 1; letter-spacing: 0.02em; }
+.hud-metric-val { font-family: var(--font-display); font-size: 1.55rem; font-weight: 700; color: #EBF0FF; line-height: 1; letter-spacing: 0.02em; }
 .hud-metric-val.gold { color: var(--neon-gold); text-shadow: var(--glow-gold-sm); }
-.hud-metric-lbl { font-family: var(--font-mono); font-size: 0.55rem; color: var(--text-4); letter-spacing: 0.1em; text-transform: uppercase; }
+.hud-metric-lbl { font-family: var(--font-mono); font-size: 0.55rem; color: rgba(235,240,255,0.35); letter-spacing: 0.1em; text-transform: uppercase; }
 
 .hud-xp-section { display: flex; flex-direction: column; gap: 0.35rem; }
 .hud-xp-label { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-4); letter-spacing: 0.06em; }
@@ -158,7 +158,7 @@
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--gutter);
 }
 
@@ -188,9 +188,9 @@
 .feature-icon  { font-size: 1.8rem; line-height: 1; }
 .feature-arrow { font-family: var(--font-mono); font-size: 1rem; color: var(--text-4); transition: color 0.2s, transform 0.2s; }
 .feature-card:hover .feature-arrow { color: var(--neon-orange); transform: translateX(3px); }
-.feature-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text-1); letter-spacing: 0.06em; text-transform: uppercase; }
+.feature-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: #111827; letter-spacing: 0.06em; text-transform: uppercase; }
 .feature-desc { color: var(--text-3); }
-.feature-desc  { font-size: 0.83rem; color: var(--text-3); line-height: 1.6; flex: 1; }
+.feature-desc  { font-size: 0.83rem; color: #4B5563; line-height: 1.6; flex: 1; }
 
 /* ════════════════════════════════════════
    FEED
@@ -220,10 +220,10 @@
 }
 .quote-inner { max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
 .quote-mark  { font-family: var(--font-display); font-size: 5rem; color: var(--neon-orange); opacity: .35; line-height: .7; margin-bottom: .5rem; }
-blockquote   { font-family: var(--font-display); font-size: clamp(1.3rem,2.8vw,1.9rem); font-weight: 600; color: var(--text-1); line-height: 1.45; margin-bottom: 1.5rem; letter-spacing: 0.02em; }
+blockquote   { font-family: var(--font-display); font-size: clamp(1.3rem,2.8vw,1.9rem); font-weight: 600; color: #EBF0FF; line-height: 1.45; margin-bottom: 1.5rem; letter-spacing: 0.02em; }
 .quote-cite  { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
 .quote-cite strong { font-family: var(--font-display); font-size: 0.85rem; letter-spacing: 0.1em; color: var(--neon-gold); text-shadow: var(--glow-gold-sm); }
-.quote-cite span   { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-4); letter-spacing: 0.08em; text-transform: uppercase; }
+.quote-cite span   { font-family: var(--font-mono); font-size: 0.65rem; color: rgba(235,240,255,0.35); letter-spacing: 0.08em; text-transform: uppercase; }
 
 /* ════════════════════════════════════════
    CTA
@@ -246,9 +246,9 @@ blockquote   { font-family: var(--font-display); font-size: clamp(1.3rem,2.8vw,1
   );
 }
 .cta-content { position: relative; z-index: 1; text-align: center; }
-.cta-title   { font-family: var(--font-display); font-size: clamp(2rem,5vw,3.5rem); font-weight: 700; color: var(--text-1); letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1; margin: 0.75rem 0; }
+.cta-title   { font-family: var(--font-display); font-size: clamp(2rem,5vw,3.5rem); font-weight: 700; color: #EBF0FF; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1; margin: 0.75rem 0; }
 .cta-title-accent { color: var(--neon-orange); text-shadow: 0 0 20px rgba(255,107,26,0.6); }
-.cta-sub     { font-size: 0.95rem; color: var(--text-3); line-height: 1.65; max-width: 420px; margin: 0 auto 2rem; }
+.cta-sub     { font-size: 0.95rem; color: rgba(235,240,255,0.6); line-height: 1.65; max-width: 420px; margin: 0 auto 2rem; }
 .cta-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
 
 /* ════════════════════════════════════════

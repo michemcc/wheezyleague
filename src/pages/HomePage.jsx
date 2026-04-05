@@ -6,12 +6,10 @@ import './HomePage.css'
 const APP_VERSION = '2026.4.0'
 
 const FEATURES = [
-  { icon:'🫁', title:'BreathZone',     desc:'Log symptoms, track triggers, spot patterns. Export to your doctor in one tap.',     link:'/breathzone', color:'green' },
-  { icon:'🏆', title:'Challenges',     desc:'Monthly missions built for asthmatic runners — any pace, any distance.',              link:'/challenges', color:'gold' },
-  { icon:'🗺️', title:'Safe Routes',   desc:'Community-rated routes tagged with AQI, pollen, surface, and elevation.',            link:'/routes',     color:'blue' },
-  { icon:'👥', title:'Community',      desc:'14,000+ wheezers sharing tips, wins, and cold-weather horror stories.',               link:'/community',  color:'violet' },
-  { icon:'🎁', title:'Real Rewards',   desc:'T-shirt at 10 runs. Race credit at 100 miles. Trophy at 365. Real gear, earned.',     link:'/incentives', color:'orange' },
-  { icon:'⭐', title:'Level Up',       desc:'XP, level badges, streak fire — a system that makes every run feel like a win.',     link:'/dashboard',  color:'gold' },
+  { icon:'🏆', title:'Challenges',    desc:'Monthly missions built for asthmatic runners. Any pace, any distance, just show up.', link:'/challenges', color:'gold' },
+  { icon:'👥', title:'Community',     desc:'14,000+ wheezers sharing tips, wins, and real stories from the road.',                link:'/community',  color:'violet' },
+  { icon:'🗺️', title:'Safe Routes',  desc:'Community-rated routes tagged with AQI, pollen level, and surface type.',            link:'/routes',     color:'blue' },
+  { icon:'🎁', title:'Real Rewards',  desc:'T-shirt at 10 runs. Race credit at 100 miles. An actual trophy at 365.',             link:'/incentives', color:'orange' },
 ]
 
 const STATS = [
