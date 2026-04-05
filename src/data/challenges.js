@@ -1,0 +1,87 @@
+/**
+ * data/challenges.js — static seed data for community challenges
+ * Replace with API calls (e.g. GET /api/challenges) when backend is ready.
+ */
+
+export const CHALLENGES = [
+  {
+    id: 1,
+    emoji: '🌬️',
+    name: 'Wheeze to Ease 5K',
+    featured: true,
+    desc: 'Complete a 5K this month — any pace, any day, any weather. The journey is the win.',
+    joined: 3241,
+    daysLeft: 14,
+    progress: 62,
+    points: 500,
+    tags: ['5K', 'Beginner-Friendly', 'Asthma'],
+  },
+  {
+    id: 2,
+    emoji: '🌅',
+    name: '5AM Sunrise Club',
+    featured: false,
+    desc: 'Run before 6AM five times this month. Early air, fewer triggers.',
+    joined: 891,
+    daysLeft: 21,
+    progress: 38,
+    points: 300,
+    tags: ['Morning', 'Consistency'],
+  },
+  {
+    id: 3,
+    emoji: '🤝',
+    name: 'Buddy System Sprint',
+    featured: false,
+    desc: 'Pair with a fellow member and complete 3 virtual runs together.',
+    joined: 512,
+    daysLeft: 7,
+    progress: 80,
+    points: 250,
+    tags: ['Social', 'Virtual'],
+  },
+  {
+    id: 4,
+    emoji: '🏙️',
+    name: 'City Miles Relay',
+    featured: false,
+    desc: 'Your city vs. theirs. Pool miles with your local The Wheezy League crew.',
+    joined: 7012,
+    daysLeft: 30,
+    progress: 22,
+    points: 750,
+    tags: ['Team', 'City Battle'],
+  },
+  {
+    id: 5,
+    emoji: '❄️',
+    name: 'Cold Weather Warrior',
+    featured: false,
+    desc: 'Complete 5 outdoor runs when temps are below 40°F. Bundle up and show up.',
+    joined: 320,
+    daysLeft: 45,
+    progress: 0,
+    points: 400,
+    tags: ['Winter', 'Outdoor', 'Asthma'],
+  },
+  {
+    id: 6,
+    emoji: '📏',
+    name: 'Distance Climber',
+    featured: false,
+    desc: 'Add half a mile to your long run every week for 4 weeks in a row.',
+    joined: 1640,
+    daysLeft: 28,
+    progress: 50,
+    points: 600,
+    tags: ['Training', 'Progressive'],
+  },
+]
+
+export const LEADERBOARD = [
+  { rank: 1, emoji: '🧑‍🦱', name: 'Marcus T.', city: 'Boston', pts: 2840 },
+  { rank: 2, emoji: '👩',    name: 'Aisha P.',  city: 'NYC',    pts: 2610 },
+  { rank: 3, emoji: '🧑🏻',  name: 'Leo M.',    city: 'LA',     pts: 2440 },
+  { rank: 4, emoji: '👩‍🦰', name: 'Leila H.',  city: 'Denver', pts: 2200 },
+  { rank: 5, emoji: '🧑🏽',  name: 'Sam O.',    city: 'Chicago',pts: 1980 },
+]

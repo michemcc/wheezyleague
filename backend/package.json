@@ -1,0 +1,30 @@
+{
+  "name": "wheezyleague-api",
+  "version": "2026.4.0",
+  "description": "The Wheezy League \u2014 Node.js/Express REST API",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "lint": "eslint src --ext .js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "express-jwt": "^8.4.1",
+    "express-rate-limit": "^7.2.0",
+    "helmet": "^7.1.0",
+    "jwks-rsa": "^3.1.0",
+    "morgan": "^1.10.0",
+    "uuid": "^9.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

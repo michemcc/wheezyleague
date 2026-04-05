@@ -1,0 +1,33 @@
+.spinner {
+  border-radius: 50%;
+  border: 2.5px solid var(--border-mid);
+  border-top-color: var(--rust);
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.spinner--sm  { width: 18px; height: 18px; }
+.spinner--md  { width: 28px; height: 28px; }
+.spinner--lg  { width: 44px; height: 44px; border-width: 3px; }
+
+.spinner-fullscreen {
+  position: fixed; inset: 0;
+  background: var(--warm-white);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.spinner-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.spinner-ring-icon {
+  font-size: 3.5rem;
+  color: var(--rust);
+  animation: breathPulse 2s ease-in-out infinite;
+}
+.spinner-logo p {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--text-light);
+}

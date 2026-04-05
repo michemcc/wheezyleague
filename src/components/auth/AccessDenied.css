@@ -1,0 +1,104 @@
+.access-denied-page {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem var(--page-px);
+}
+
+.access-denied-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: clamp(2rem, 5vw, 3.5rem);
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+.dark .access-denied-card {
+  background: #1e1308;
+  border-color: rgba(255,255,255,0.08);
+}
+
+.ad-icon { font-size: 3.5rem; }
+
+.ad-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--earth);
+}
+.dark .ad-title { color: #F5EFE5; }
+
+.ad-body {
+  font-size: 0.95rem;
+  color: var(--text-mid);
+  line-height: 1.65;
+}
+.dark .ad-body { color: rgba(245,239,229,0.72); }
+.ad-body strong { color: var(--rust); }
+
+.ad-detail {
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  width: 100%;
+  text-align: left;
+}
+.dark .ad-detail { background: rgba(255,255,255,0.05); }
+
+.ad-detail-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+}
+.ad-roles { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.ad-no-roles { font-size: 0.85rem; color: var(--text-light); font-style: italic; }
+
+.ad-steps {
+  background: var(--rust-pale);
+  border: 1px solid rgba(224,84,30,0.15);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  width: 100%;
+  text-align: left;
+}
+.dark .ad-steps { background: rgba(224,84,30,0.08); border-color: rgba(224,84,30,0.2); }
+
+.ad-steps-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--rust);
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.ad-steps ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.ad-steps li {
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  line-height: 1.55;
+}
+.dark .ad-steps li { color: rgba(245,239,229,0.72); }
+.ad-steps a { color: var(--rust); font-weight: 600; }
+
+.ad-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}

@@ -1,0 +1,7 @@
+/* routes-page game style */
+.routes-page { padding-top: clamp(1.25rem,3vw,2rem); }
+.routes-header { margin-bottom:1.25rem; }
+.routes-toolbar { display:flex; gap:.65rem; align-items:center; margin-bottom:var(--gutter); flex-wrap:wrap; }
+.routes-search { flex:1; max-width:300px; }
+.aqi-filters { display:flex; gap:.3rem; flex-wrap:wrap; }
+.routes-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr)); gap:var(--gutter); }

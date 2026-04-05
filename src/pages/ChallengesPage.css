@@ -1,0 +1,8 @@
+/* challenges-page game style */
+.challenges-page { padding-top: clamp(1.25rem,3vw,2rem); }
+.challenges-header { margin-bottom:1.35rem; }
+.challenges-stats { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.75rem; }
+.challenges-layout { display:grid; grid-template-columns:1fr 250px; gap:var(--gutter); align-items:start; }
+.challenges-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr)); gap:var(--gutter); }
+.rewards-list { display:flex; flex-direction:column; gap:.08rem; }
+@media (max-width:900px) { .challenges-layout { grid-template-columns:1fr; } }

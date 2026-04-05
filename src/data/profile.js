@@ -1,0 +1,86 @@
+/**
+ * data/profile.js — demo profile, dashboard, and symptom seed data
+ */
+
+export const DEMO_PROFILE = {
+  id: 'demo-user-001',
+  name: 'Alex Runner',
+  username: 'alexrunner',
+  email: 'alex@wheezyleague.run',
+  avatar: null,
+  bio: 'Exercise-induced asthma diagnosed 2021. Running proved my doctor wrong. 🫁',
+  city: 'Boston, MA',
+  joinedDate: 'January 2024',
+  badge: 'Breath Warrior',
+  badgeIcon: '🏅',
+  level: 12,
+  xp: 3400,
+  xpToNext: 4000,
+  totalMiles: 312,
+  totalRuns: 84,
+  longestRun: 13.1,
+  favoritePace: '9:42',
+  streak: 23,
+  bestStreak: 30,
+  points: 1550,
+  inhalerType: 'Albuterol (rescue)',
+  asthmaType: 'Exercise-induced',
+  diagnosedYear: '2021',
+  emergencyContact: '',
+  notifyAqi: true,
+  notifyChallenges: true,
+  distanceUnit: 'mi',
+  achievements: [
+    { id: 1, icon: '🏃', label: 'First 5K', earned: true, date: 'Feb 2024' },
+    { id: 2, icon: '🔥', label: '7-Day Streak', earned: true, date: 'Mar 2024' },
+    { id: 3, icon: '💨', label: 'Breath Warrior', earned: true, date: 'Apr 2024' },
+    { id: 4, icon: '🌅', label: 'Sunrise Runner', earned: true, date: 'May 2024' },
+    { id: 5, icon: '🏅', label: 'Half Marathon', earned: false, date: null },
+    { id: 6, icon: '⭐', label: '30-Day Streak', earned: false, date: null },
+    { id: 7, icon: '🌍', label: '500 Miles', earned: false, date: null },
+    { id: 8, icon: '🤝', label: 'Buddy Runner', earned: false, date: null },
+  ],
+}
+
+export const DEMO_DASHBOARD = {
+  weeklyMiles: 18.4,
+  weeklySessions: 4,
+  avgPace: '9:42',
+  weeklyGoal: 25,
+  totalMiles: 312,
+  streak: 23,
+  bestStreak: 30,
+  points: 1550,
+  level: 12,
+  xp: 3400,
+  xpToNext: 4000,
+  weekBars: [4.2, 0, 5.1, 0, 3.8, 5.3, 0],
+  aqi: {
+    value: 42,
+    label: 'Good',
+    cls: 'good',
+    pm25: 'Low',
+    pollen: 'Moderate',
+    humidity: '58%',
+    temp: '62°F',
+    advice: '✅ Safe to run. Light pollen — consider a mask.',
+  },
+  inhalerLog: [
+    { time: '7:14 AM', note: 'Pre-run rescue inhaler', tag: 'Pre-run', tagClass: 'tag-sky' },
+    { time: '9:02 AM', note: 'Mild tightness at mile 2', tag: 'Symptom', tagClass: 'tag-amber' },
+    { time: '9:05 AM', note: 'Rescue inhaler used', tag: 'Mid-run', tagClass: 'tag-rust' },
+  ],
+  activeChallenges: [
+    { name: 'Wheeze to Ease 5K', progress: 62, days: 14, emoji: '🌬️' },
+    { name: 'Buddy System Sprint', progress: 80, days: 7, emoji: '🤝' },
+    { name: 'City Miles Relay', progress: 22, days: 30, emoji: '🏙️' },
+  ],
+}
+
+export const DEMO_SYMPTOM_LOG = [
+  { date: 'Mar 13', run: '4.2 mi', symptoms: 'Mild wheeze at mile 3', triggers: 'Cold air, high pollen', level: 'mild' },
+  { date: 'Mar 11', run: '5.1 mi', symptoms: 'None', triggers: '–', level: 'none' },
+  { date: 'Mar 10', run: '3.8 mi', symptoms: 'Chest tightness, used rescue inhaler', triggers: 'PM2.5 spike', level: 'moderate' },
+  { date: 'Mar 8',  run: '5.3 mi', symptoms: 'None', triggers: '–', level: 'none' },
+  { date: 'Mar 6',  run: '2.1 mi', symptoms: 'Shortness of breath, cut run short', triggers: 'High humidity + heat', level: 'severe' },
+]
