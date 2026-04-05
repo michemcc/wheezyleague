@@ -2,7 +2,7 @@
    SECONDWIND  //  GAME NAV  HUD-style
    ═══════════════════════════════════════════════════════ */
 
-.nav-stack { position: sticky; top: 0; z-index: 400; }
+.nav-stack { position: sticky; top: 0; z-index: 600; }
 
 /* ── Mode banner ── */
 .demo-banner-bar {
@@ -175,7 +175,7 @@
   box-shadow: var(--elev-4);
   overflow: hidden;
   animation: slideDown .15s var(--ease) both;
-  z-index: 500;
+  z-index: 700;
 }
 .bell-panel { width: min(320px, 90vw); }
 .user-panel { min-width: 210px; max-width: min(255px, 88vw); }

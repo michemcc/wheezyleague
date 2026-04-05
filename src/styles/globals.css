@@ -26,26 +26,26 @@
   --glow-gold-sm:   0 0 6px rgba(255,210,63,0.5), 0 0 14px rgba(255,210,63,0.2);
   --glow-green-sm:  0 0 6px rgba(0,255,148,0.5),  0 0 14px rgba(0,255,148,0.15);
 
-  /* ── SURFACES (dark-first) ── */
-  --bg:        #080B12;   /* page — near-black with blue tint */
-  --surface:   #0F1520;   /* card — slightly lighter */
-  --surface-2: #161E2E;   /* inset / secondary */
-  --surface-3: #1E2840;   /* tertiary / borders */
-  --surface-4: #263350;   /* hover / highlight */
+  /* ── SURFACES (light mode default) ── */
+  --bg:        #F8F9FC;   /* page — very light cool grey */
+  --surface:   #FFFFFF;   /* card — pure white */
+  --surface-2: #F0F2F7;   /* inset / secondary */
+  --surface-3: #E2E6F0;   /* dividers / borders */
+  --surface-4: #D4DAE8;   /* hover / active */
 
-  /* light mode compat aliases */
+  /* legacy aliases */
   --warm-white:  var(--bg);
   --cream:       var(--surface-2);
-  --earth:       #0F1520;
-  --earth-mid:   #1E2840;
-  --earth-light: #2E3C5A;
+  --earth:       #111827;
+  --earth-mid:   #374151;
+  --earth-light: #6B7280;
   --off-white:   var(--surface-2);
 
-  /* ── TEXT ── */
-  --text-1: #E8F0FF;   /* primary — cool white with blue tint */
-  --text-2: rgba(232,240,255,0.75);
-  --text-3: rgba(232,240,255,0.45);
-  --text-4: rgba(232,240,255,0.25);
+  /* ── TEXT (light mode — high contrast) ── */
+  --text-1: #0F1117;   /* near-black — headings */
+  --text-2: #1F2937;   /* dark grey — body */
+  --text-3: #4B5563;   /* medium grey — secondary */
+  --text-4: #9CA3AF;   /* light grey — placeholders/muted */
 
   --text-dark:   var(--text-1);
   --text-mid:    var(--text-2);
@@ -80,24 +80,24 @@
   --red:          var(--neon-red);
   --red-pale:     rgba(255,61,90,0.12);
 
-  /* ── BORDERS — sharp, neon-tinged ── */
-  --border:        rgba(0,212,255,0.08);
-  --border-mid:    rgba(0,212,255,0.15);
-  --border-strong: rgba(0,212,255,0.28);
-  --border-neon:   rgba(255,107,26,0.6);  /* active / selected */
+  /* ── BORDERS — light mode: neutral grey ── */
+  --border:        rgba(15,17,23,0.1);
+  --border-mid:    rgba(15,17,23,0.16);
+  --border-strong: rgba(15,17,23,0.28);
+  --border-neon:   rgba(255,107,26,0.7);  /* active / selected */
 
-  /* ── ELEVATION — dark, deep shadows ── */
-  --elev-1: 0 2px 8px  rgba(0,0,0,0.4);
-  --elev-2: 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,255,0.05);
-  --elev-3: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.08);
-  --elev-4: 0 16px 56px rgba(0,0,0,0.7),0 0 0 1px rgba(0,212,255,0.1);
+  /* ── ELEVATION — light mode: crisp, subtle ── */
+  --elev-1: 0 1px 3px  rgba(15,17,23,0.08), 0 1px 2px rgba(15,17,23,0.04);
+  --elev-2: 0 4px 12px rgba(15,17,23,0.10), 0 2px 4px rgba(15,17,23,0.06);
+  --elev-3: 0 8px 24px rgba(15,17,23,0.12), 0 4px 8px rgba(15,17,23,0.06);
+  --elev-4: 0 16px 48px rgba(15,17,23,0.14),0 6px 16px rgba(15,17,23,0.08);
   --shadow-xs: var(--elev-1);
   --shadow-sm: var(--elev-1);
   --shadow:    var(--elev-2);
   --shadow-lg: var(--elev-4);
-  --shadow-rust: 0 4px 20px rgba(255,107,26,0.4);
-  --shadow-gold: 0 4px 20px rgba(255,210,63,0.35);
-  --shadow-sage: 0 4px 20px rgba(0,255,148,0.3);
+  --shadow-rust: 0 4px 20px rgba(255,107,26,0.25);
+  --shadow-gold: 0 4px 20px rgba(255,210,63,0.2);
+  --shadow-sage: 0 4px 20px rgba(0,255,148,0.18);
 
   /* ── RADIUS — angular but not sharp ── */
   --r-xs:   4px;
@@ -223,6 +223,7 @@ ul        { list-style: none; }
   text-transform: uppercase;
   margin-bottom: 0.6rem;
 }
+.dark .section-title { color: var(--text-1); }
 .section-title--light { color: var(--text-1); }
 .section-title em     { font-style: normal; color: var(--neon-orange); text-shadow: var(--glow-orange-sm); }
 .section-title--light em { color: var(--neon-gold); text-shadow: var(--glow-gold-sm); }
@@ -561,6 +562,12 @@ select.input {
   --border-mid:    rgba(0,212,255,0.15);
   --border-strong: rgba(0,212,255,0.28);
 }
-.dark body  { background: var(--bg); color: var(--text-1); }
+.dark body  { background: var(--bg); color: var(--text-2); }
+.dark h1, .dark h2, .dark h3, .dark h4 { color: var(--text-1); }
 .dark .card { background: var(--surface); border-color: var(--border-mid); }
+.dark .card--flat { background: var(--surface-2); }
 .dark .input { background: var(--surface-2); border-color: var(--border-mid); color: var(--text-1); }
+.dark .input::placeholder { color: var(--text-4); }
+.dark .section-title { color: var(--text-1); }
+.dark .section-sub   { color: var(--text-3); }
+.dark .page-title    { color: var(--text-1); }

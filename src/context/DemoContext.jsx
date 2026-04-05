@@ -15,8 +15,12 @@ export function DemoProvider({ children }) {
   const envMode = (import.meta.env.VITE_DATA_MODE ?? 'demo') === 'demo'
   const [isDemo,         setIsDemo]         = useState(envMode)
   const [notifications,  setNotifications]  = useState(INITIAL_NOTIFICATIONS)
-  const [darkMode,       setDarkMode]        = useState(() => {
-    try { return localStorage.getItem('sw-dark') === 'true' } catch { return false }
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      const stored = localStorage.getItem('sw-dark')
+      // Default to light mode if no preference stored
+      return stored === null ? false : stored === 'true'
+    } catch { return false }
   })
   // Shared avatar URL — set by ProfilePage when user uploads a photo,
   // read by Navbar so the topbar chip updates immediately
