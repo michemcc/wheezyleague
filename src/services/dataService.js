@@ -50,6 +50,21 @@ export async function createPost(payload, isDemo) {
   return _apiFetch('/posts', { method: 'POST', body: JSON.stringify(payload) })
 }
 
+export async function deletePost(postId, isDemo) {
+  if (isDemo) return { deleted: true }
+  return _apiFetch(`/posts/${postId}`, { method: 'DELETE' })
+}
+
+export async function getComments(postId, isDemo) {
+  if (isDemo) return []
+  return _apiFetch(`/posts/${postId}/comments`).catch(() => [])
+}
+
+export async function addComment(postId, body, isDemo) {
+  if (isDemo) return { id: Date.now(), name: 'You', body, createdAt: new Date().toISOString() }
+  return _apiFetch(`/posts/${postId}/comments`, { method: 'POST', body: JSON.stringify({ body }) })
+}
+
 export async function toggleLike(postId, liked, isDemo) {
   if (isDemo) return { postId, liked }
   return _apiFetch(`/posts/${postId}/like`, { method: liked ? 'DELETE' : 'POST' })

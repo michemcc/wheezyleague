@@ -59,8 +59,8 @@ export default function ChallengesPage() {
   const [selectedChallenge, setSelectedChallenge] = useState(null)
 
   useEffect(() => {
-    getChallenges(isDemo).then(d => setChallenges(Array.isArray(d) ? d : CHALLENGES))
-    getLeaderboard(isDemo).then(d => setLeaderboard(Array.isArray(d) && d.length ? d : LEADERBOARD))
+    getChallenges(isDemo).then(d => setChallenges(Array.isArray(d) ? d : (isDemo ? CHALLENGES : [])))
+    getLeaderboard(isDemo).then(d => setLeaderboard(Array.isArray(d) && d.length ? d : (isDemo ? LEADERBOARD : [])))
   }, [isDemo])
 
   const toggleJoin = (id) => {

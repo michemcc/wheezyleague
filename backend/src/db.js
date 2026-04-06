@@ -21,6 +21,7 @@ const _users     = new Map()   // userId → profile object
 const _stats     = new Map()   // userId → dashboard stats
 const _symptoms  = new Map()   // userId → symptom entries[]
 const _posts     = []          // flat array (paginated in route)
+const _comments  = new Map()   // postId → comment entries[]
 const _joined    = new Map()   // userId → Set<challengeId>
 const _saved     = new Map()   // userId → Set<routeId>
 
@@ -109,6 +110,14 @@ async function createPost({ sub, name, body, filter = 'story' }) {
   return post
 }
 
+async function deletePost(id, sub) {
+  const i = _posts.findIndex(p => p.id === id && p.userId === sub)
+  if (i === -1) return null
+  _posts.splice(i, 1)
+  _comments.delete(id)
+  return { deleted: true }
+}
+
 async function likePost(id, delta = 1) {
   const post = _posts.find(p => p.id === id)
   if (!post) return null
@@ -144,6 +153,21 @@ async function createSymptom(sub, fields) {
   if (!_symptoms.has(sub)) _symptoms.set(sub, [])
   _symptoms.get(sub).unshift(entry)
   return entry
+}
+
+// ── Comments ─────────────────────────────────────────────────────────────────
+async function listComments(postId) {
+  return _comments.get(postId) ?? []
+}
+
+async function createComment(postId, { sub, name, body }) {
+  const comment = { id: uuid(), postId, userId: sub, name, body, createdAt: new Date().toISOString() }
+  if (!_comments.has(postId)) _comments.set(postId, [])
+  _comments.get(postId).push(comment)
+  // bump comment count on post
+  const post = _posts.find(p => p.id === postId)
+  if (post) post.comments = (_comments.get(postId)).length
+  return comment
 }
 
 // ── Rewards ──────────────────────────────────────────────────────────────────
@@ -202,7 +226,8 @@ async function getAdminStats() {
 module.exports = {
   getUser, upsertUser, updateUser,
   getStats,
-  listPosts, createPost, likePost,
+  listPosts, createPost, likePost, deletePost,
+  listComments, createComment,
   listChallenges, joinChallenge, leaveChallenge,
   listSymptoms, createSymptom,
   listRewards, createReward, updateReward, deleteReward,

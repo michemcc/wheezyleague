@@ -47,4 +47,32 @@ router.delete('/:id/like', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// DELETE /api/posts/:id  (only the post owner can delete)
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const result = await db.deletePost(req.params.id, req.auth.sub)
+    if (!result) return res.status(404).json({ error: 'Post not found or not yours.' })
+    res.json({ deleted: true })
+  } catch (err) { next(err) }
+})
+
+// GET /api/posts/:id/comments
+router.get('/:id/comments', async (req, res, next) => {
+  try { res.json(await db.listComments(req.params.id)) } catch (err) { next(err) }
+})
+
+// POST /api/posts/:id/comments
+router.post('/:id/comments', async (req, res, next) => {
+  try {
+    const { body } = req.body
+    if (!body?.trim()) return res.status(400).json({ error: 'Comment body required.' })
+    const comment = await db.createComment(req.params.id, {
+      sub:  req.auth.sub,
+      name: req.auth.name || 'Runner',
+      body: body.trim(),
+    })
+    res.status(201).json(comment)
+  } catch (err) { next(err) }
+})
+
 module.exports = router

@@ -12,6 +12,15 @@ const clientId    = import.meta.env.VITE_AUTH0_CLIENT_ID
 const redirectUri = import.meta.env.VITE_AUTH0_REDIRECT_URI || window.location.origin
 const audience    = import.meta.env.VITE_AUTH0_AUDIENCE
 
+// After login, send user to /dashboard unless Auth0 has a specific returnTo
+function onRedirectCallback(appState) {
+  window.history.replaceState(
+    {},
+    document.title,
+    appState?.returnTo || '/dashboard'
+  )
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Auth0Provider
@@ -19,15 +28,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       clientId={clientId || 'YOUR_AUTH0_CLIENT_ID'}
       authorizationParams={{
         redirect_uri: redirectUri,
-        // audience is required for Auth0 to issue an access token
-        // which is what carries the custom role claims
         ...(audience ? { audience } : {}),
       }}
-      // localstorage: tokens survive page refresh so users don't lose their session.
-      // Roles are read from the access token on mount (see useAuth.js).
-      // Note: memory is safer on shared devices, but causes role loss on refresh.
+      onRedirectCallback={onRedirectCallback}
       cacheLocation="localstorage"
-      // Re-use existing session silently on load — avoids redirect loop on refresh
       useRefreshTokens={true}
     >
       <BrowserRouter>
