@@ -15,9 +15,10 @@ import { DEMO_PROFILE, DEMO_DASHBOARD, DEMO_SYMPTOM_LOG } from '../data/profile'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api'
 
-async function _apiFetch(path, options = {}) {
+async function _apiFetch(path, options = {}, token = null) {
+  const authHeader = token ? { Authorization: `Bearer ${token}` } : {}
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: { 'Content-Type': 'application/json', ...authHeader, ...options.headers },
     ...options,
   })
   if (!res.ok) throw new Error(`API ${res.status} on ${path}`)
@@ -91,3 +92,16 @@ export async function addSymptomEntry(userId, entry, isDemo) {
   if (isDemo) { await new Promise(r => setTimeout(r, 400)); return { id: Date.now(), ...entry } }
   return _apiFetch(`/symptoms/${userId}`, { method: 'POST', body: JSON.stringify(entry) })
 }
+
+// ── Admin API ─────────────────────────────────────────────────────────────────
+export async function adminGetRewards(token)            { return _apiFetch('/admin/rewards',       {},                               token) }
+export async function adminCreateReward(payload, token) { return _apiFetch('/admin/rewards',       { method:'POST', body:JSON.stringify(payload) }, token) }
+export async function adminUpdateReward(id, payload, token) { return _apiFetch(`/admin/rewards/${id}`, { method:'PATCH',body:JSON.stringify(payload) }, token) }
+export async function adminDeleteReward(id, token)     { return _apiFetch(`/admin/rewards/${id}`, { method:'DELETE' },               token) }
+
+export async function adminGetChallenges(token)              { return _apiFetch('/admin/challenges',       {},                                token) }
+export async function adminCreateChallenge(payload, token)   { return _apiFetch('/admin/challenges',       { method:'POST', body:JSON.stringify(payload) }, token) }
+export async function adminUpdateChallenge(id, payload, token) { return _apiFetch(`/admin/challenges/${id}`, { method:'PATCH',body:JSON.stringify(payload) }, token) }
+export async function adminDeleteChallenge(id, token)        { return _apiFetch(`/admin/challenges/${id}`, { method:'DELETE' },                token) }
+
+export async function adminGetStats(token) { return _apiFetch('/admin/stats', {}, token) }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useDemo } from '../../context/DemoContext'
+import useAuth from '../../hooks/useAuth'
 import { DEMO_PROFILE } from '../../data/profile'
 import './Navbar.css'
 
@@ -16,6 +17,7 @@ const NAV_LINKS = [
 export default function Navbar() {
   const { isAuthenticated, user, loginWithRedirect, logout, isLoading } = useAuth0()
   const { isDemo, toggleDemo, notifications, unreadCount, markAllRead, markRead, darkMode, toggleDark, avatarUrl } = useDemo()
+  const { hasRole } = useAuth()
 
   const [userOpen,   setUserOpen]   = useState(false)
   const [bellOpen,   setBellOpen]   = useState(false)
@@ -180,6 +182,7 @@ export default function Navbar() {
                       <Link to="/profile"    className="panel-item" onClick={() => setUserOpen(false)}>👤 My Profile</Link>
                       <Link to="/dashboard"  className="panel-item" onClick={() => setUserOpen(false)}>📊 Dashboard</Link>
                       <Link to="/challenges" className="panel-item" onClick={() => setUserOpen(false)}>🏆 Challenges</Link>
+                      {hasRole('admin') && <Link to="/admin" className="panel-item" style={{ color: 'var(--neon-orange)' }} onClick={() => setUserOpen(false)}>⚙️ Admin Panel</Link>}
                       <div className="panel-divider" />
                       <div className="panel-item panel-item--toggle">
                         <span>{darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
@@ -189,7 +192,7 @@ export default function Navbar() {
                       </div>
                       <div className="panel-divider" />
                       <div className="panel-item panel-item--version">
-                        <span>The Wheezy League</span><span className="version-tag">v2026.5.0</span>
+                        <span>The Wheezy League</span><span className="version-tag">v2026.6.0</span>
                       </div>
                       <div className="panel-divider" />
                       <button className="panel-item panel-item--danger"
@@ -256,6 +259,7 @@ export default function Navbar() {
                   {isActive(to) && <span className="drawer-link-pip" aria-hidden="true" />}
                 </Link>
               ))}
+              {hasRole('admin') && <Link to="/admin" className={`drawer-link${isActive('/admin') ? ' drawer-link--active' : ''}`}><span className="drawer-link-icon">⚙️</span><span>Admin</span></Link>}
               <Link to="/profile" className={`drawer-link${isActive('/profile') ? ' drawer-link--active' : ''}`}>
                 <span className="drawer-link-icon">👤</span><span>Profile</span>
               </Link>

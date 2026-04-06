@@ -6,6 +6,7 @@ const CLAIM_NS    = 'https://wheezyleague.run/'
 const ROLE_CLAIM  = `${CLAIM_NS}roles`
 const ORG_CLAIM   = `${CLAIM_NS}org`
 const MEMBER_ROLE = 'WheezyLeague-Member'
+const ADMIN_ROLE  = 'admin'
 
 // Validates Auth0 JWT and attaches decoded payload to req.auth
 const authMiddleware = jwt({
@@ -37,4 +38,4 @@ function requireRole(role) {
   }
 }
 
-module.exports = { authMiddleware, requireMember, requireRole, MEMBER_ROLE, ROLE_CLAIM, ORG_CLAIM }
+module.exports = { authMiddleware, requireMember, requireRole, MEMBER_ROLE, ADMIN_ROLE, ROLE_CLAIM, ORG_CLAIM }

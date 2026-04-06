@@ -37,7 +37,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="footer-bottom">
-          <span>© 2026 The Wheezy League · v2026.5.0</span>
+          <span>© 2026 The Wheezy League · v2026.6.0</span>
           <span className="footer-breath">Run with every breath. 🫁</span>
         </div>
 

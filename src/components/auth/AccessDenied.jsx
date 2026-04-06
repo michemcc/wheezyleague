@@ -34,7 +34,7 @@ export default function AccessDenied({ roles = [], requiredRole }) {
         <div className="ad-steps">
           <p className="ad-steps-title">What to do next:</p>
           <ol>
-            <li>Ask your Wheezy League admin to assign you the <strong>WheezyLeague-Member</strong> role in Auth0.</li>
+            <li>Ask your Wheezy League admin to assign you the <strong>WheezyLeague-Member</strong> role in Auth0 Dashboard → User Management → Users → your user → Roles.</li>
             <li>Or <Link to="/contact">contact The Wheezy League support</Link> if you believe this is a mistake.</li>
             <li>Once the role is assigned, log out and back in for it to take effect.</li>
           </ol>

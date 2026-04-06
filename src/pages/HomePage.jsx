@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import './HomePage.css'
 
-const APP_VERSION = '2026.5.0'
+const APP_VERSION = '2026.6.0'
 
 const FEATURES = [
   { icon:'🏆', title:'Challenges',    desc:'Monthly missions built for asthmatic runners. Any pace, any distance, just show up.', link:'/challenges', color:'gold' },
@@ -16,7 +16,7 @@ const STATS = [
   { num:'14,200+', lbl:'Active Members' },
   { num:'98%',     lbl:'Fewer Flare-ups' },
   { num:'340K',    lbl:'Miles Logged' },
-  { num:'Lv.12',   lbl:'Avg Player Level' },
+  { num:'Lv.12',   lbl:'Avg Runner Level' },
 ]
 
 const ROSTER = [
@@ -209,7 +209,7 @@ export default function HomePage() {
             <div className="cta-content">
               <span className="section-label section-label--light">READY PLAYER?</span>
               <h2 className="cta-title">Your second wind<br/><span className="cta-title-accent">starts NOW</span></h2>
-              <p className="cta-sub">Free to join. No pace requirements. Every breath counts.</p>
+              <p className="cta-sub">Free to join. No pace requirements.<br/>Every breath counts.</p>
               <div className="cta-actions">
                 <button className="btn btn-gold btn-lg" onClick={() => loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } })}>
                   ▶ START YOUR RUN

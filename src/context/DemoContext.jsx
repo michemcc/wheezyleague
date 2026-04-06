@@ -12,7 +12,8 @@ const INITIAL_NOTIFICATIONS = [
 ]
 
 export function DemoProvider({ children }) {
-  const envMode = (import.meta.env.VITE_DATA_MODE ?? 'demo') === 'demo'
+  // Default to live mode. Set VITE_DATA_MODE=demo in .env.local to default to demo.
+  const envMode = import.meta.env.VITE_DATA_MODE === 'demo'
   const [isDemo,         setIsDemo]         = useState(envMode)
   const [notifications,  setNotifications]  = useState(INITIAL_NOTIFICATIONS)
   const [darkMode, setDarkMode] = useState(() => {

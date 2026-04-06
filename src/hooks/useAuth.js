@@ -1,75 +1,112 @@
 /**
  * useAuth — enriched auth hook for The Wheezy League
  *
- * Wraps Auth0's useAuth0 and adds:
- *  - Role checking via Auth0 custom claims
- *  - Organization detection
- *  - Convenience helpers: hasRole(), hasAnyRole(), isMember()
+ * Wraps Auth0's useAuth0 and adds role + org helpers.
  *
  * HOW ROLES GET INTO THE TOKEN
  * ─────────────────────────────
- * Auth0 doesn't put roles in tokens by default. You need an Action:
+ * Auth0 doesn't put roles in tokens by default. You need a Post-Login Action:
  *
- *  1. Auth0 Dashboard → Actions → Library → Create Action (Login / Post Login)
- *  2. Paste this code:
+ *   exports.onExecutePostLogin = async (event, api) => {
+ *     const ns = 'https://wheezyleague.run/'
+ *     const roles = event.authorization?.roles ?? []
+ *     const org   = event.organization?.name  ?? null
+ *     // Write to BOTH tokens — idToken for the React app, accessToken for the API
+ *     api.idToken.setCustomClaim(`${ns}roles`, roles)
+ *     api.idToken.setCustomClaim(`${ns}org`,   org)
+ *     api.accessToken.setCustomClaim(`${ns}roles`, roles)
+ *     api.accessToken.setCustomClaim(`${ns}org`,   org)
+ *   }
  *
- *     exports.onExecutePostLogin = async (event, api) => {
- *       const ns = 'https://wheezyleague.run/'
- *       const roles = event.authorization?.roles ?? []
- *       const org   = event.organization?.name  ?? null
- *       api.idToken.setCustomClaim(`${ns}roles`, roles)
- *       api.idToken.setCustomClaim(`${ns}org`,   org)
- *       api.accessToken.setCustomClaim(`${ns}roles`, roles)
- *       api.accessToken.setCustomClaim(`${ns}org`,   org)
- *     }
+ * Deploy the action and drag it into the Login flow in Auth0 Dashboard.
  *
- *  3. Deploy the action and attach it to the Login flow.
+ * WHY ROLES MIGHT BE MISSING AFTER TOGGLING TO LIVE MODE
+ * ────────────────────────────────────────────────────────
+ * 1. VITE_AUTH0_AUDIENCE is not set → Auth0 issues an opaque token with no
+ *    custom claims. Solution: make sure VITE_AUTH0_AUDIENCE is set in .env.local.
  *
- * After that, decoded tokens will contain:
- *   user['https://wheezyleague.run/roles'] = ['WheezyLeague-Member']
- *   user['https://wheezyleague.run/org']   = 'my-run-club'
+ * 2. The Post-Login Action only writes to accessToken, not idToken.
+ *    Solution: write to BOTH (see Action code above).
+ *
+ * 3. Token cached before Action was added → old token has no roles.
+ *    Solution: log out and log back in to get a fresh token.
+ *
+ * 4. The WheezyLeague-Member role wasn't assigned to your user in Auth0.
+ *    Solution: Auth0 Dashboard → User Management → Users → your user → Roles → Assign.
  */
 
 import { useAuth0 } from '@auth0/auth0-react'
+import { useState, useEffect } from 'react'
 
 const CLAIM_NS   = 'https://wheezyleague.run/'
 const ROLE_CLAIM = `${CLAIM_NS}roles`
 const ORG_CLAIM  = `${CLAIM_NS}org`
 
-/** The role name assigned in Auth0 to full members */
 export const MEMBER_ROLE = 'WheezyLeague-Member'
 
 export default function useAuth() {
-  const { user, isAuthenticated, isLoading, loginWithRedirect, logout, getAccessTokenSilently } = useAuth0()
+  const {
+    user,
+    isAuthenticated,
+    isLoading,
+    loginWithRedirect,
+    logout,
+    getAccessTokenSilently,
+  } = useAuth0()
 
-  /** Roles array from custom claim, e.g. ['WheezyLeague-Member'] */
-  const roles = (user?.[ROLE_CLAIM] ?? [])
+  // Roles from ID token (fast, available immediately from user object)
+  const idTokenRoles = user?.[ROLE_CLAIM] ?? []
+  const idTokenOrg   = user?.[ORG_CLAIM]  ?? null
 
-  /** Organization name from custom claim, e.g. 'boston-run-club' */
-  const org   = user?.[ORG_CLAIM] ?? null
+  // Also decode roles from the access token — this is the authoritative source
+  // and is what the backend checks. We cache it in state so it updates once on login.
+  const [accessTokenRoles, setAccessTokenRoles] = useState([])
+  const [accessTokenOrg,   setAccessTokenOrg]   = useState(null)
+  const [rolesLoading,     setRolesLoading]      = useState(false)
 
-  /** True if the user has the WheezyLeague-Member role OR belongs to an org */
-  const isMember = roles.includes(MEMBER_ROLE) || !!org
+  useEffect(() => {
+    if (!isAuthenticated || !import.meta.env.VITE_AUTH0_AUDIENCE) return
 
-  /** Check for a specific role */
-  const hasRole = (role) => roles.includes(role)
+    setRolesLoading(true)
+    getAccessTokenSilently({
+      authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
+    })
+      .then(token => {
+        // JWT payload is the middle base64url segment
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+          setAccessTokenRoles(payload[ROLE_CLAIM] ?? [])
+          setAccessTokenOrg(payload[ORG_CLAIM]   ?? null)
+        } catch {
+          // Token may be opaque (no audience set) — fall back to ID token
+        }
+      })
+      .catch(() => {
+        // Silently fall back to ID token roles
+      })
+      .finally(() => setRolesLoading(false))
+  }, [isAuthenticated, getAccessTokenSilently])
 
-  /** Check for any of the given roles */
-  const hasAnyRole = (...roleList) => roleList.some(r => roles.includes(r))
+  // Merge: use access token roles if available, fall back to ID token
+  const roles = accessTokenRoles.length > 0 ? accessTokenRoles : idTokenRoles
+  const org   = accessTokenOrg ?? idTokenOrg
+
+  const isMember  = roles.includes(MEMBER_ROLE) || !!org
+  const hasRole   = (role) => roles.includes(role)
+  const hasAnyRole= (...roleList) => roleList.some(r => roles.includes(r))
 
   const login  = (opts = {}) => loginWithRedirect(opts)
   const signup = () => loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } })
   const signout= () => logout({ logoutParams: { returnTo: window.location.origin } })
 
-  /** Get a fresh access token (attach as Bearer for API calls) */
   const getToken = () => getAccessTokenSilently({
-    authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE }
+    authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
   })
 
   return {
     user,
     isAuthenticated,
-    isLoading,
+    isLoading: isLoading || rolesLoading,
     roles,
     org,
     isMember,

@@ -7,7 +7,7 @@ const cors      = require('cors')
 const morgan    = require('morgan')
 const rateLimit = require('express-rate-limit')
 
-const { authMiddleware, requireMember } = require('./middleware/auth')
+const { authMiddleware, requireMember, requireRole } = require('./middleware/auth')
 
 const app    = express()
 const PORT   = process.env.PORT || 4000
@@ -58,8 +58,7 @@ app.use('/api/posts',      authMiddleware, requireMember, require('./routes/post
 app.use('/api/challenges', authMiddleware, requireMember, require('./routes/challenges'))
 app.use('/api/routes',     authMiddleware, requireMember, require('./routes/routes'))
 app.use('/api/symptoms',   authMiddleware, requireMember, require('./routes/symptoms'))
-app.use('/api/strava',     authMiddleware, requireMember, require('./routes/strava'))
-app.use('/api/mapmyrun',   authMiddleware, requireMember, require('./routes/mapmyrun'))
+app.use('/api/admin',      authMiddleware, requireRole('admin'), require('./routes/admin'))
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }))

@@ -19,13 +19,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       clientId={clientId || 'YOUR_AUTH0_CLIENT_ID'}
       authorizationParams={{
         redirect_uri: redirectUri,
-        // Request the API audience so Auth0 issues an access token
-        // with your custom role claims attached
+        // audience is required for Auth0 to issue an access token
+        // which is what carries the custom role claims
         ...(audience ? { audience } : {}),
       }}
-      // Cache tokens in memory (safest default — use 'localstorage' for
-      // persistent sessions across refreshes once you're in production)
-      cacheLocation="memory"
+      // localstorage: tokens survive page refresh so users don't lose their session.
+      // Roles are read from the access token on mount (see useAuth.js).
+      // Note: memory is safer on shared devices, but causes role loss on refresh.
+      cacheLocation="localstorage"
+      // Re-use existing session silently on load — avoids redirect loop on refresh
+      useRefreshTokens={true}
     >
       <BrowserRouter>
         <DemoProvider>

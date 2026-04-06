@@ -79,13 +79,19 @@
 .logo-name {
   font-family: var(--font-display);
   font-size: 0.98rem; font-weight: 700; line-height: 1;
-  /* flex row removes any whitespace gap between child spans */
-  display: inline-flex; align-items: baseline;
+  /* inline-block collapses gaps; font-size:0 trick would kill child text */
+  display: inline-block;
   letter-spacing: 0.02em; text-transform: uppercase;
   color: #111827;
+  /* Remove any word-spacing that browsers add */
+  word-spacing: 0;
 }
 .dark .logo-name { color: #E8F0FF; }
-.logo-accent { color: var(--neon-orange); }
+/* logo-accent is inline inside logo-name — no extra spacing */
+.logo-accent {
+  color: var(--neon-orange);
+  display: inline;
+}
 @media (max-width: 360px) { .logo-name { display: none; } }
 
 /* ── Desktop nav links ───────────────────────────── */

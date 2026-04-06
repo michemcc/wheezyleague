@@ -1,6 +1,6 @@
 {
   "name": "wheezyleague-api",
-  "version": "2026.5.0",
+  "version": "2026.6.0",
   "description": "The Wheezy League \u2014 Node.js/Express REST API",
   "main": "src/index.js",
   "scripts": {

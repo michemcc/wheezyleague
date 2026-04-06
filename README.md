@@ -1,6 +1,6 @@
 # 🫁 The Wheezy League
 
-**v2026.5.0** — Asthma-friendly run club platform.
+**v2026.6.0** — Asthma-friendly run club platform.
 
 > Run with every breath.
 
@@ -87,4 +87,4 @@ The banner toggle switches data sources at runtime:
 
 ## Versioning
 
-`YYYY.MINOR.PATCH` — calendar versioning. Current: **v2026.5.0**
+`YYYY.MINOR.PATCH` — calendar versioning. Current: **v2026.6.0**

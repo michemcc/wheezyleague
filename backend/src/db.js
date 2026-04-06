@@ -24,6 +24,18 @@ const _posts     = []          // flat array (paginated in route)
 const _joined    = new Map()   // userId → Set<challengeId>
 const _saved     = new Map()   // userId → Set<routeId>
 
+// Rewards — admin-manageable
+const _rewards = [
+  { id: 'rw-1', icon: '🧣', name: 'Buff Headband',              pts: 400,  stock: true,  description: 'The Wheezy League branded headband.' },
+  { id: 'rw-2', icon: '🏁', name: 'Race Entry Credit ($25)',    pts: 1000, stock: true,  description: '$25 toward any partner race entry.' },
+  { id: 'rw-3', icon: '💨', name: 'Partner Inhaler Discount',  pts: 600,  stock: true,  description: '20% off partner pharmacy. UK/US only.' },
+  { id: 'rw-4', icon: '🟤', name: 'Foam Roller',               pts: 800,  stock: true,  description: 'High-density foam roller, shipped.' },
+  { id: 'rw-5', icon: '🫁', name: '1-Month BreathPro Free',    pts: 500,  stock: true,  description: 'One free month of BreathPro subscription.' },
+  { id: 'rw-6', icon: '❤️', name: 'Donate to Asthma Research', pts: 300,  stock: true,  description: 'We donate 300pts-worth to Asthma + Lung UK.' },
+  { id: 'rw-7', icon: '🧢', name: 'The Wheezy League Cap',     pts: 1200, stock: false, description: 'Limited edition. Back in stock soon.' },
+  { id: 'rw-8', icon: '🧦', name: 'Running Socks (3-pack)',    pts: 700,  stock: true,  description: 'Blister-resistant, asthma-friendly dye.' },
+]
+
 const _challenges = [
   { id: 'ch-1', emoji: '🌬️', name: 'Wheeze to Ease 5K',  points: 500, joined: 3241, daysLeft: 14, featured: true,  tags: ['5K', 'Beginner-Friendly', 'Asthma'] },
   { id: 'ch-2', emoji: '🌅', name: '5AM Sunrise Club',    points: 300, joined: 891,  daysLeft: 21, featured: false, tags: ['Morning', 'Consistency'] },
@@ -134,10 +146,66 @@ async function createSymptom(sub, fields) {
   return entry
 }
 
+// ── Rewards ──────────────────────────────────────────────────────────────────
+async function listRewards() { return _rewards }
+
+async function createReward(fields) {
+  const reward = { id: `rw-${uuid()}`, ...fields }
+  _rewards.push(reward)
+  return reward
+}
+
+async function updateReward(id, fields) {
+  const i = _rewards.findIndex(r => r.id === id)
+  if (i === -1) return null
+  const ALLOWED = ['name', 'icon', 'pts', 'stock', 'description']
+  ALLOWED.forEach(k => { if (fields[k] !== undefined) _rewards[i][k] = fields[k] })
+  return _rewards[i]
+}
+
+async function deleteReward(id) {
+  const i = _rewards.findIndex(r => r.id === id)
+  if (i !== -1) _rewards.splice(i, 1)
+}
+
+// ── Challenge admin ───────────────────────────────────────────────────────────
+async function createChallenge(fields) {
+  const ch = { id: `ch-${uuid()}`, joined: 0, ...fields }
+  _challenges.push(ch)
+  return ch
+}
+
+async function updateChallenge(id, fields) {
+  const i = _challenges.findIndex(c => c.id === id)
+  if (i === -1) return null
+  const ALLOWED = ['name', 'emoji', 'points', 'daysLeft', 'featured', 'tags', 'description']
+  ALLOWED.forEach(k => { if (fields[k] !== undefined) _challenges[i][k] = fields[k] })
+  return _challenges[i]
+}
+
+async function deleteChallenge(id) {
+  const i = _challenges.findIndex(c => c.id === id)
+  if (i !== -1) _challenges.splice(i, 1)
+}
+
+// ── Admin stats ───────────────────────────────────────────────────────────────
+async function getAdminStats() {
+  return {
+    totalUsers:      _users.size,
+    totalPosts:      _posts.length,
+    totalChallenges: _challenges.length,
+    totalRewards:    _rewards.length,
+    rewardsInStock:  _rewards.filter(r => r.stock).length,
+  }
+}
+
 module.exports = {
   getUser, upsertUser, updateUser,
   getStats,
   listPosts, createPost, likePost,
   listChallenges, joinChallenge, leaveChallenge,
   listSymptoms, createSymptom,
+  listRewards, createReward, updateReward, deleteReward,
+  createChallenge, updateChallenge, deleteChallenge,
+  getAdminStats,
 }

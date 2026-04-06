@@ -51,7 +51,7 @@
 .redeem-icon { font-size:1.85rem; }
 .redeem-name { font-family:var(--font-display); font-weight:700; color:var(--text-1); font-size:.88rem; text-transform:uppercase; letter-spacing:.04em; }
 .redeem-footer { display:flex; justify-content:space-between; align-items:center; gap:.4rem; margin-top:auto; flex-wrap:wrap; }
-.inc-fine-print { padding:1.05rem 1.2rem; display:flex; flex-direction:column; gap:.4rem; }
+.inc-fine-print { padding:1.05rem 1.2rem; display:flex; flex-direction:column; gap:.4rem; margin-top:1.5rem; }
 .inc-fine-print p { font-family:var(--font-mono); font-size:.68rem; color:var(--text-4); line-height:1.6; letter-spacing:.04em; }
 .inc-fine-print a { color:var(--neon-orange); }
 @media (max-width:640px) { .inc-progress-card { flex-direction:column; align-items:flex-start; } .inc-prog-center { width:100%; } }
