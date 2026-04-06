@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
+import useAuth from '../hooks/useAuth'
 import { getProfile, updateProfile } from '../services/dataService'
 import { useDemo } from '../context/DemoContext'
+import useAqi from '../hooks/useAqi'
 import './ProfilePage.css'
 
 export default function ProfilePage() {
@@ -71,6 +73,8 @@ export default function ProfilePage() {
     }
     reader.readAsDataURL(file)
   }
+
+  const aqi = useAqi(profile?.city || '')
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
@@ -145,7 +149,14 @@ export default function ProfilePage() {
             </div>
             <p className="profile-username">@{profile.username}</p>
             {!editing && <p className="profile-bio">{profile.bio}</p>}
-            <p className="profile-city">📍 {profile.city} · Member since {profile.joinedDate}</p>
+            <p className="profile-city">
+              📍 {profile.city || 'No location set'} · Member since {profile.joinedDate}
+              {aqi.aqi && (
+                <span className="profile-aqi-badge" title={aqi.label}>
+                  {aqi.icon} AQI {aqi.aqi}
+                </span>
+              )}
+            </p>
             <div className="profile-xp-wrap">
               <div className="xp-label-row">
                 <span>Level {profile.level} — {profile.badge}</span>
@@ -211,6 +222,7 @@ export default function ProfilePage() {
               <div className="form-group">
                 <label className="form-label">City</label>
                 <input className="input" value={form.city||''} onChange={e=>set('city',e.target.value)} placeholder="Boston, MA" />
+                <p className="form-hint">Used for live air quality data on your dashboard</p>
               </div>
               <div className="form-group">
                 <label className="form-label">Distance Unit</label>

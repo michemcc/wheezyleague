@@ -54,3 +54,21 @@
 @media (max-width:900px) { .profile-stats-row { grid-template-columns:repeat(4,1fr); } .profile-body { grid-template-columns:1fr; } }
 @media (max-width:640px) { .profile-stats-row { grid-template-columns:repeat(3,1fr); } .profile-hero-inner { flex-direction:column; align-items:center; text-align:center; } .profile-name-row { justify-content:center; } .profile-edit-btn { margin:0 auto; } }
 @media (max-width:480px) { .profile-stats-row { grid-template-columns:repeat(2,1fr); } }
+/* AQI badge inline in profile city line */
+.profile-aqi-badge {
+  display:inline-flex; align-items:center; gap:.25rem;
+  margin-left:.75rem;
+  font-family:var(--font-mono); font-size:.65rem; font-weight:700;
+  letter-spacing:.05em;
+  background:var(--surface-2); border:1px solid var(--border-mid);
+  padding:.15rem .5rem; border-radius:var(--r-full);
+  color:var(--text-2);
+}
+.dark .profile-aqi-badge { background:rgba(255,255,255,.06); }
+
+/* AQI no-location state in dashboard */
+.aqi-no-location { font-size:.82rem; }
+.aqi-no-location a { color:var(--neon-orange); }
+
+/* form hint text */
+.form-hint { font-size:.72rem; color:var(--text-4); margin-top:.25rem; font-style:italic; }

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
+import useAuth from '../hooks/useAuth'
 import { useDemo } from '../context/DemoContext'
-import { getDashboard } from '../services/dataService'
+import { getDashboard, getProfile } from '../services/dataService'
+import useAqi from '../hooks/useAqi'
 import LogRunModal from '../components/ui/LogRunModal'
 import './DashboardPage.css'
 
@@ -38,12 +40,27 @@ function PendingBanner() {
 
 export default function DashboardPage() {
   const { user } = useAuth0()
+  const { getToken } = useAuth()
   const { isDemo } = useDemo()
   const [data,         setData]         = useState(null)
   const [loading,      setLoading]      = useState(true)
   const [logRunOpen,   setLogRunOpen]   = useState(false)
   const [logEntry,     setLogEntry]     = useState('')
   const [logEntries,   setLogEntries]   = useState([])
+  const [userLocation, setUserLocation] = useState('')
+
+  // Load user's saved location for AQI
+  useEffect(() => {
+    if (!user?.sub || isDemo) return
+    const load = async () => {
+      const token = await getToken().catch(() => null)
+      const p = await getProfile(user.sub, false, token)
+      if (p?.city) setUserLocation(p.city)
+    }
+    load()
+  }, [user?.sub, isDemo])
+
+  const aqi = useAqi(isDemo ? 'Boston, MA' : userLocation)
 
   useEffect(() => {
     setLoading(true)
@@ -152,25 +169,31 @@ export default function DashboardPage() {
         {/* AQI */}
         <div className="card dash-card">
           <div className="dash-card-header"><span>🌬️ Air Quality</span></div>
-          {empty || !data?.aqi ? (
-            <div className="empty-chart"><span>🌍</span><p>AQI data pending</p></div>
-          ) : (
+          {aqi.loading ? (
+            <div className="empty-chart"><span>🌍</span><p>Loading AQI…</p></div>
+          ) : !aqi.aqi && !userLocation && !isDemo ? (
+            <div className="empty-chart aqi-no-location">
+              <span>📍</span>
+              <p>Add your city on your <a href="/profile">profile page</a> to see live air quality.</p>
+            </div>
+          ) : aqi.aqi ? (
             <>
               <div className="aqi-main">
-                <div className={`aqi-circle aqi-${data.aqi.cls}`}>
-                  <span className="aqi-num">{data.aqi.value}</span>
-                  <span className="aqi-word">{data.aqi.label}</span>
+                <div className={`aqi-circle aqi-${aqi.color}`}>
+                  <span className="aqi-num">{aqi.aqi}</span>
+                  <span className="aqi-word">{aqi.label}</span>
                 </div>
                 <div className="aqi-rows">
-                  {[['PM2.5', data.aqi.pm25, 'ok'], ['Pollen', data.aqi.pollen, 'warn'], ['Humidity', data.aqi.humidity, 'ok'], ['Temp', data.aqi.temp, 'ok']].map(([l, v, c]) => (
-                    <div key={l} className="aqi-row">
-                      <span>{l}</span><span className={`aqi-val-${c}`}>{v}</span>
-                    </div>
-                  ))}
+                  {aqi.pm25  != null && <div className="aqi-row"><span>PM2.5</span><span className="aqi-val-ok">{aqi.pm25} μg/m³</span></div>}
+                  {aqi.pm10  != null && <div className="aqi-row"><span>PM10</span><span className="aqi-val-ok">{aqi.pm10} μg/m³</span></div>}
+                  <div className="aqi-row"><span>Safe to run?</span><span className={aqi.safe ? 'aqi-val-ok' : 'aqi-val-warn'}>{aqi.safe ? '✓ Yes' : '⚠ Take care'}</span></div>
+                  <div className="aqi-row"><span>Location</span><span className="aqi-val-ok" style={{fontSize:'0.7rem'}}>{aqi.location}</span></div>
                 </div>
               </div>
-              <div className="aqi-advice">{data.aqi.advice}</div>
+              <div className="aqi-advice">{aqi.safe ? 'Good conditions for your run today.' : 'Consider indoor training or a mask.'}</div>
             </>
+          ) : (
+            <div className="empty-chart"><span>🌍</span><p>AQI data pending</p></div>
           )}
         </div>
 

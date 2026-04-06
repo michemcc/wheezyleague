@@ -57,7 +57,7 @@ async function upsertUser(sub, { email, name } = {}) {
       name: name || 'Runner',
       username: email?.split('@')[0] || 'runner',
       email: email || '',
-      bio: '', city: '',
+      bio: '', city: '', location: '', locationLat: null, locationLng: null,
       badge: 'Newbie', badgeIcon: '🏅',
       level: 1, xp: 0, xpToNext: 500,
       asthmaType: '', inhalerType: '', diagnosedYear: '', emergencyContact: '',
@@ -71,7 +71,7 @@ async function upsertUser(sub, { email, name } = {}) {
 
 async function updateUser(sub, fields) {
   const user = await upsertUser(sub)
-  const ALLOWED = ['name','username','bio','city','distanceUnit','asthmaType','inhalerType','diagnosedYear','emergencyContact','notifyAqi','notifyChallenges']
+  const ALLOWED = ['name','username','bio','city','location','locationLat','locationLng','distanceUnit','asthmaType','inhalerType','diagnosedYear','emergencyContact','notifyAqi','notifyChallenges']
   ALLOWED.forEach(k => { if (fields[k] !== undefined) user[k] = fields[k] })
   _users.set(sub, user)
   return user

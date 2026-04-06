@@ -92,3 +92,11 @@
 /* Responsive */
 @media (max-width:1024px) { .stats-row-grid { grid-template-columns:repeat(2,1fr); } .dashboard-grid { grid-template-columns:1fr 1fr; } }
 @media (max-width:640px)  { .stats-row-grid { grid-template-columns:repeat(2,1fr); } .dashboard-grid { grid-template-columns:1fr; } .dash-card--wide { grid-column:span 1; } }
+
+.aqi-green  { background:#16A34A; color:#fff; }
+.aqi-yellow { background:#CA8A04; color:#fff; }
+.aqi-orange { background:#EA580C; color:#fff; }
+.aqi-red    { background:#DC2626; color:#fff; }
+.aqi-purple { background:#9333EA; color:#fff; }
+.aqi-maroon { background:#7F1D1D; color:#fff; }
+.aqi-gray   { background:var(--surface-3); color:var(--text-3); }
