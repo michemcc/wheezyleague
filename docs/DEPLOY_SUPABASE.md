@@ -1,73 +1,75 @@
-# Deploying The Wheezy League with Supabase + Vercel + Railway
+# Adding Supabase to The Wheezy League
 
-This guide takes you from the in-memory demo backend to a fully production-ready deployment with Supabase (PostgreSQL), Vercel (frontend), and Railway (API server).
+This guide upgrades the backend from the in-memory store (data resets on restart) to Supabase (PostgreSQL — data persists forever). Everything runs on Vercel — no Railway or separate backend host needed.
+
+See [`DEPLOY_VERCEL.md`](./DEPLOY_VERCEL.md) for the full deployment guide first.
 
 ---
 
-## Architecture Overview
+## Architecture
 
 ```
 Browser
-  │
-  ├── Vercel  (React frontend, static)
-  │     └── calls ──► Railway  (Express API)
-  │                       └── reads/writes ──► Supabase  (PostgreSQL)
-  │
-  └── Auth0  (authentication, token issuance)
+  └── Vercel project
+        ├── /          → React frontend (Vite → dist/)
+        └── /api/*     → Express serverless function (api/index.js)
+                              └── Supabase PostgreSQL
 ```
 
 ---
 
-## Part 1 — Supabase Setup
+## Part 1 — Create a Supabase project
 
-### 1.1 Create a project
+1. Go to [supabase.com](https://supabase.com) → **New Project**
+2. Pick a region close to your Vercel deployment region (usually US East or EU West)
+3. Set a strong database password and save it somewhere
+4. Wait ~2 minutes for provisioning
 
-1. Go to [supabase.com](https://supabase.com) and sign in
-2. Click **New Project**, choose your region, set a strong database password
-3. Wait ~2 minutes for provisioning
+---
 
-### 1.2 Get your connection string
+## Part 2 — Get your credentials
 
-1. In your Supabase project → **Settings → Database**
-2. Scroll to **Connection String → URI**
-3. Copy the URI — it looks like:
-   ```
-   postgresql://postgres:[YOUR-PASSWORD]@db.[REF].supabase.co:5432/postgres
-   ```
-4. This becomes `DATABASE_URL` in your Railway environment
+In your Supabase project → **Settings → API**:
 
-### 1.3 Run the database schema
+| Value | Where to find it |
+|-------|-----------------|
+| `SUPABASE_URL` | Project URL — looks like `https://[ref].supabase.co` |
+| `SUPABASE_SERVICE_KEY` | `service_role` key (bottom of the API page) — **keep this secret, server-side only** |
 
-In your Supabase project → **SQL Editor**, paste and run:
+---
+
+## Part 3 — Run the database schema
+
+In Supabase → **SQL Editor**, paste and run this entire block:
 
 ```sql
--- Users / profiles
+-- ── Users / profiles ──────────────────────────────────────
 create table if not exists users (
-  id              text primary key,          -- Auth0 sub
-  name            text not null default 'Runner',
-  username        text not null default 'runner',
-  email           text not null default '',
-  bio             text not null default '',
-  city            text not null default '',
-  badge           text not null default 'Newbie',
-  badge_icon      text not null default '🏅',
-  level           int  not null default 1,
-  xp              int  not null default 0,
-  xp_to_next      int  not null default 500,
-  points          int  not null default 0,
-  asthma_type     text not null default '',
-  inhaler_type    text not null default '',
-  diagnosed_year  text not null default '',
+  id                text primary key,   -- Auth0 sub (e.g. "auth0|abc123")
+  name              text not null default 'Runner',
+  username          text not null default 'runner',
+  email             text not null default '',
+  bio               text not null default '',
+  city              text not null default '',
+  badge             text not null default 'Newbie',
+  badge_icon        text not null default '🏅',
+  level             int  not null default 1,
+  xp                int  not null default 0,
+  xp_to_next        int  not null default 500,
+  points            int  not null default 0,
+  asthma_type       text not null default '',
+  inhaler_type      text not null default '',
+  diagnosed_year    text not null default '',
   emergency_contact text not null default '',
   notify_aqi        boolean not null default true,
   notify_challenges boolean not null default true,
-  distance_unit   text not null default 'mi',
-  joined_date     text not null default '',
-  created_at      timestamptz not null default now(),
-  updated_at      timestamptz not null default now()
+  distance_unit     text not null default 'mi',
+  joined_date       text not null default '',
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now()
 );
 
--- Dashboard stats (one row per user, upserted after each run)
+-- ── Dashboard stats ────────────────────────────────────────
 create table if not exists stats (
   user_id         text primary key references users(id) on delete cascade,
   weekly_miles    numeric not null default 0,
@@ -81,7 +83,7 @@ create table if not exists stats (
   updated_at      timestamptz not null default now()
 );
 
--- Community posts
+-- ── Community posts ────────────────────────────────────────
 create table if not exists posts (
   id          uuid primary key default gen_random_uuid(),
   user_id     text not null references users(id) on delete cascade,
@@ -92,9 +94,20 @@ create table if not exists posts (
   comments    int  not null default 0,
   created_at  timestamptz not null default now()
 );
-create index on posts (created_at desc);
+create index if not exists posts_created_at_idx on posts (created_at desc);
 
--- Symptom log
+-- ── Comments ──────────────────────────────────────────────
+create table if not exists comments (
+  id          uuid primary key default gen_random_uuid(),
+  post_id     uuid not null references posts(id) on delete cascade,
+  user_id     text not null references users(id) on delete cascade,
+  name        text not null default 'Runner',
+  body        text not null,
+  created_at  timestamptz not null default now()
+);
+create index if not exists comments_post_id_idx on comments (post_id, created_at);
+
+-- ── Symptom log ────────────────────────────────────────────
 create table if not exists symptoms (
   id          uuid primary key default gen_random_uuid(),
   user_id     text not null references users(id) on delete cascade,
@@ -106,9 +119,9 @@ create table if not exists symptoms (
   notes       text,
   created_at  timestamptz not null default now()
 );
-create index on symptoms (user_id, created_at desc);
+create index if not exists symptoms_user_idx on symptoms (user_id, created_at desc);
 
--- Challenge participation
+-- ── Challenge joins ────────────────────────────────────────
 create table if not exists challenge_joins (
   user_id      text not null references users(id) on delete cascade,
   challenge_id text not null,
@@ -116,43 +129,77 @@ create table if not exists challenge_joins (
   primary key (user_id, challenge_id)
 );
 
--- Enable Row Level Security
+-- ── Notifications ──────────────────────────────────────────
+create table if not exists notifications (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    text not null references users(id) on delete cascade,
+  icon       text not null default '🔔',
+  title      text not null,
+  body       text not null,
+  read       boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists notif_user_idx on notifications (user_id, created_at desc);
+
+-- ── Rewards (admin-managed) ────────────────────────────────
+create table if not exists rewards (
+  id          uuid primary key default gen_random_uuid(),
+  icon        text not null default '🎁',
+  name        text not null,
+  pts         int  not null,
+  stock       boolean not null default true,
+  description text not null default '',
+  created_at  timestamptz not null default now()
+);
+
+-- Seed default rewards
+insert into rewards (icon, name, pts, stock, description) values
+  ('🧣', 'Buff Headband',             400,  true,  'The Wheezy League branded headband.'),
+  ('🏁', 'Race Entry Credit ($25)',   1000, true,  '$25 toward any partner race entry.'),
+  ('💨', 'Partner Inhaler Discount',  600,  true,  '20% off partner pharmacy. UK/US only.'),
+  ('🟤', 'Foam Roller',               800,  true,  'High-density foam roller, shipped.'),
+  ('🫁', '1-Month BreathPro Free',    500,  true,  'One free month of BreathPro subscription.'),
+  ('❤️', 'Donate to Asthma Research', 300,  true,  'We donate to Asthma + Lung UK.'),
+  ('🧢', 'The Wheezy League Cap',     1200, false, 'Limited edition. Back in stock soon.'),
+  ('🧦', 'Running Socks (3-pack)',    700,  true,  'Blister-resistant running socks.')
+on conflict do nothing;
+
+-- ── Enable Row Level Security ──────────────────────────────
+-- The backend connects as service_role which bypasses RLS.
+-- Enable it anyway so direct DB access is protected by default.
 alter table users            enable row level security;
 alter table stats            enable row level security;
 alter table posts            enable row level security;
+alter table comments         enable row level security;
 alter table symptoms         enable row level security;
 alter table challenge_joins  enable row level security;
+alter table notifications    enable row level security;
+alter table rewards          enable row level security;
 
--- Service role bypasses RLS (your API uses the service role key)
--- No RLS policies needed when connecting via service role
+-- ── Atomic like increment function ────────────────────────
+create or replace function increment_likes(post_id uuid, amount int)
+returns json language plpgsql as $$
+declare updated posts;
+begin
+  update posts set likes = greatest(0, likes + amount)
+  where id = post_id returning * into updated;
+  return row_to_json(updated);
+end;
+$$;
 ```
-
-> **Note:** The backend connects as the **service role** (bypasses RLS). Never expose the service role key in the browser.
 
 ---
 
-## Part 2 — Update the Backend for Supabase
+## Part 4 — Update db.js with Supabase queries
 
-### 2.1 Install the Supabase client
+Install the Supabase client in the backend:
 
 ```bash
 cd backend
 npm install @supabase/supabase-js
 ```
 
-### 2.2 Add Supabase credentials to backend/.env
-
-```env
-DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres
-SUPABASE_URL=https://[REF].supabase.co
-SUPABASE_SERVICE_KEY=your_service_role_key    # Settings → API → service_role
-```
-
-> Get `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` from your Supabase project → **Settings → API**.
-
-### 2.3 Replace db.js with the Supabase version
-
-Replace `backend/src/db.js` entirely with:
+Replace `backend/src/db.js` entirely with the Supabase version:
 
 ```js
 'use strict'
@@ -160,10 +207,10 @@ const { createClient } = require('@supabase/supabase-js')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY   // service role — server-side only
+  process.env.SUPABASE_SERVICE_KEY  // service role — never expose client-side
 )
 
-// ── Users ─────────────────────────────────────────────────────────────────────
+// ── Users ─────────────────────────────────────────────────
 async function getUser(sub) {
   const { data } = await supabase.from('users').select('*').eq('id', sub).single()
   return data
@@ -172,85 +219,112 @@ async function getUser(sub) {
 async function upsertUser(sub, { email, name } = {}) {
   const { data, error } = await supabase
     .from('users')
-    .upsert(
-      {
-        id:          sub,
-        email:       email || '',
-        name:        name  || 'Runner',
-        username:    email?.split('@')[0] || 'runner',
-        joined_date: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        updated_at:  new Date().toISOString(),
-      },
-      { onConflict: 'id', ignoreDuplicates: false }
-    )
-    .select()
-    .single()
+    .upsert({ id: sub, email: email || '', name: name || 'Runner',
+               username: email?.split('@')[0] || 'runner',
+               joined_date: new Date().toLocaleDateString('en-US', { month:'long', year:'numeric' }),
+               updated_at: new Date().toISOString() },
+             { onConflict: 'id', ignoreDuplicates: false })
+    .select().single()
   if (error) throw error
   return data
 }
 
 async function updateUser(sub, fields) {
-  const ALLOWED = ['name','username','bio','city','distance_unit','asthma_type','inhaler_type','diagnosed_year','emergency_contact','notify_aqi','notify_challenges']
-  const update  = {}
+  const ALLOWED = ['name','username','bio','city','distance_unit','asthma_type',
+                   'inhaler_type','diagnosed_year','emergency_contact','notify_aqi','notify_challenges']
+  const update = { updated_at: new Date().toISOString() }
   ALLOWED.forEach(k => { if (fields[k] !== undefined) update[k] = fields[k] })
-  update.updated_at = new Date().toISOString()
   const { data, error } = await supabase.from('users').update(update).eq('id', sub).select().single()
   if (error) throw error
   return data
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
+// ── Stats ──────────────────────────────────────────────────
 async function getStats(sub) {
-  // Ensure user row exists first
   await upsertUser(sub)
-  const { data } = await supabase.from('stats').select('*').eq('user_id', sub).single()
+  let { data } = await supabase.from('stats').select('*').eq('user_id', sub).single()
   if (!data) {
     const { data: created } = await supabase.from('stats').insert({ user_id: sub }).select().single()
-    return created
+    data = created
   }
   return data
 }
 
-// ── Posts ─────────────────────────────────────────────────────────────────────
+// ── Posts ──────────────────────────────────────────────────
 async function listPosts({ page = 1, filter = 'all', perPage = 20 } = {}) {
-  let query = supabase.from('posts').select('*', { count: 'exact' }).order('created_at', { ascending: false })
-  if (filter !== 'all') query = query.eq('filter', filter)
-  const { data, count, error } = await query.range((page - 1) * perPage, page * perPage - 1)
+  let q = supabase.from('posts').select('*', { count: 'exact' }).order('created_at', { ascending: false })
+  if (filter !== 'all') q = q.eq('filter', filter)
+  const { data, count, error } = await q.range((page-1)*perPage, page*perPage-1)
   if (error) throw error
   return { posts: data, total: count, page }
 }
 
 async function createPost({ sub, name, body, filter = 'story' }) {
-  const { data, error } = await supabase
-    .from('posts')
+  const { data, error } = await supabase.from('posts')
     .insert({ user_id: sub, name: name || 'Runner', body: body.trim(), filter })
-    .select()
-    .single()
+    .select().single()
   if (error) throw error
   return data
 }
 
+async function deletePost(id, sub) {
+  const { data } = await supabase.from('posts').select('id').eq('id', id).eq('user_id', sub).single()
+  if (!data) return null
+  await supabase.from('posts').delete().eq('id', id)
+  return { deleted: true }
+}
+
 async function likePost(id, delta = 1) {
-  // Use a Postgres function to atomically increment
   const { data, error } = await supabase.rpc('increment_likes', { post_id: id, amount: delta })
   if (error) throw error
   return data
 }
 
-// ── Challenges ────────────────────────────────────────────────────────────────
+// ── Comments ───────────────────────────────────────────────
+async function listComments(postId) {
+  const { data, error } = await supabase.from('comments').select('*')
+    .eq('post_id', postId).order('created_at', { ascending: true })
+  if (error) throw error
+  return data
+}
+
+async function createComment(postId, { sub, name, body }) {
+  const { data, error } = await supabase.from('comments')
+    .insert({ post_id: postId, user_id: sub, name, body })
+    .select().single()
+  if (error) throw error
+  // Increment comment count on post
+  await supabase.from('posts').update({ comments: supabase.rpc('get_comment_count', { pid: postId }) }).eq('id', postId)
+  return data
+}
+
+// ── Symptoms ───────────────────────────────────────────────
+async function listSymptoms(sub) {
+  const { data, error } = await supabase.from('symptoms').select('*')
+    .eq('user_id', sub).order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+async function createSymptom(sub, fields) {
+  const { data, error } = await supabase.from('symptoms').insert({ user_id: sub, ...fields }).select().single()
+  if (error) throw error
+  return data
+}
+
+// ── Challenges ─────────────────────────────────────────────
 async function listChallenges() {
-  // Challenges are static config for now — move to DB table if you want admin editing
+  // Static config — move to a DB table when you want admin editing to persist
   return [
-    { id: 'ch-1', emoji: '🌬️', name: 'Wheeze to Ease 5K',  points: 500, joined: 3241, daysLeft: 14, featured: true  },
-    { id: 'ch-2', emoji: '🌅', name: '5AM Sunrise Club',    points: 300, joined: 891,  daysLeft: 21, featured: false },
-    { id: 'ch-3', emoji: '🤝', name: 'Buddy System Sprint', points: 250, joined: 512,  daysLeft: 7,  featured: false },
-    { id: 'ch-4', emoji: '🏙️', name: 'City Miles Relay',   points: 750, joined: 7012, daysLeft: 30, featured: false },
+    { id:'ch-1', emoji:'🌬️', name:'Wheeze to Ease 5K',  points:500, joined:3241, daysLeft:14, featured:true  },
+    { id:'ch-2', emoji:'🌅', name:'5AM Sunrise Club',    points:300, joined:891,  daysLeft:21, featured:false },
+    { id:'ch-3', emoji:'🤝', name:'Buddy System Sprint', points:250, joined:512,  daysLeft:7,  featured:false },
+    { id:'ch-4', emoji:'🏙️', name:'City Miles Relay',   points:750, joined:7012, daysLeft:30, featured:false },
   ]
 }
 
 async function joinChallenge(sub, challengeId) {
-  const { error } = await supabase.from('challenge_joins').upsert({ user_id: sub, challenge_id: challengeId })
-  if (error) throw error
+  await supabase.from('challenge_joins').upsert({ user_id: sub, challenge_id: challengeId })
   return { challengeId, joined: true }
 }
 
@@ -259,151 +333,142 @@ async function leaveChallenge(sub, challengeId) {
   return { challengeId, joined: false }
 }
 
-// ── Symptoms ──────────────────────────────────────────────────────────────────
-async function listSymptoms(sub) {
-  const { data, error } = await supabase
-    .from('symptoms').select('*').eq('user_id', sub).order('created_at', { ascending: false })
+// ── Notifications ──────────────────────────────────────────
+async function listNotifications(sub) {
+  let { data } = await supabase.from('notifications').select('*')
+    .eq('user_id', sub).order('created_at', { ascending: false }).limit(20)
+  if (!data || data.length === 0) {
+    // Seed welcome notification for new users
+    await createNotification(sub, { icon:'🫁', title:'Welcome to The Wheezy League!', body:'Your journey starts here. Log your first run to earn XP.' })
+    const { data: fresh } = await supabase.from('notifications').select('*').eq('user_id', sub).order('created_at', { ascending: false })
+    data = fresh
+  }
+  return data || []
+}
+
+async function markNotificationsRead(sub, ids = null) {
+  let q = supabase.from('notifications').update({ read: true }).eq('user_id', sub)
+  if (ids) q = q.in('id', ids)
+  const { data } = await q.select()
+  return data
+}
+
+async function createNotification(sub, { icon, title, body }) {
+  const { data } = await supabase.from('notifications').insert({ user_id: sub, icon, title, body }).select().single()
+  return data
+}
+
+// ── Rewards ────────────────────────────────────────────────
+async function listRewards() {
+  const { data, error } = await supabase.from('rewards').select('*').order('pts')
+  if (error) throw error
+  return data || []
+}
+
+async function createReward(fields) {
+  const { data, error } = await supabase.from('rewards').insert(fields).select().single()
   if (error) throw error
   return data
 }
 
-async function createSymptom(sub, fields) {
-  const { data, error } = await supabase
-    .from('symptoms')
-    .insert({ user_id: sub, ...fields })
-    .select()
-    .single()
+async function updateReward(id, fields) {
+  const ALLOWED = ['name','icon','pts','stock','description']
+  const update = {}
+  ALLOWED.forEach(k => { if (fields[k] !== undefined) update[k] = fields[k] })
+  const { data, error } = await supabase.from('rewards').update(update).eq('id', id).select().single()
   if (error) throw error
   return data
+}
+
+async function deleteReward(id) {
+  await supabase.from('rewards').delete().eq('id', id)
+}
+
+// ── Challenge admin ────────────────────────────────────────
+async function createChallenge(fields) { return fields }  // static for now
+async function updateChallenge(id, fields) { return { id, ...fields } }
+async function deleteChallenge(id) {}
+
+// ── Admin stats ────────────────────────────────────────────
+async function getAdminStats() {
+  const [users, posts, rewards] = await Promise.all([
+    supabase.from('users').select('id', { count:'exact', head:true }),
+    supabase.from('posts').select('id', { count:'exact', head:true }),
+    supabase.from('rewards').select('id,stock'),
+  ])
+  return {
+    totalUsers:      users.count   || 0,
+    totalPosts:      posts.count   || 0,
+    totalChallenges: 4,
+    totalRewards:    rewards.data?.length || 0,
+    rewardsInStock:  rewards.data?.filter(r => r.stock).length || 0,
+  }
 }
 
 module.exports = {
   getUser, upsertUser, updateUser,
   getStats,
-  listPosts, createPost, likePost,
-  listChallenges, joinChallenge, leaveChallenge,
+  listPosts, createPost, deletePost, likePost,
+  listComments, createComment,
   listSymptoms, createSymptom,
+  listChallenges, joinChallenge, leaveChallenge,
+  listNotifications, markNotificationsRead, createNotification,
+  listRewards, createReward, updateReward, deleteReward,
+  createChallenge, updateChallenge, deleteChallenge,
+  getAdminStats,
 }
 ```
 
-Add the `increment_likes` SQL function in Supabase SQL Editor:
+---
 
-```sql
-create or replace function increment_likes(post_id uuid, amount int)
-returns json language plpgsql as $$
-declare
-  updated posts;
-begin
-  update posts set likes = greatest(0, likes + amount) where id = post_id returning * into updated;
-  return row_to_json(updated);
-end;
-$$;
+## Part 5 — Set environment variables on Vercel
+
+In Vercel → Project → **Settings → Environment Variables**, add:
+
 ```
+SUPABASE_URL          https://[ref].supabase.co
+SUPABASE_SERVICE_KEY  your_service_role_key
+NODE_ENV              production
+AUTH0_DOMAIN          your-tenant.auth0.com
+AUTH0_AUDIENCE        https://api.wheezyleague.run
+FRONTEND_URL          https://your-app.vercel.app
+VITE_DATA_MODE        real
+VITE_API_BASE_URL     /api
+VITE_AUTH0_DOMAIN     your-tenant.auth0.com
+VITE_AUTH0_CLIENT_ID  your_spa_client_id
+VITE_AUTH0_AUDIENCE   https://api.wheezyleague.run
+```
+
+Then redeploy — Vercel picks up the new env vars automatically.
 
 ---
 
-## Part 3 — Set variables on Vercel
-
-### 3.1 Set environment variables on Vercel
-
-In Vercel → Project → **Settings → Environment Variables**:
-
-```
-NODE_ENV=production
-FRONTEND_URL=https://your-app.vercel.app
-AUTH0_DOMAIN=your-tenant.auth0.com
-AUTH0_AUDIENCE=https://api.wheezyleague.run
-SUPABASE_URL=https://[REF].supabase.co
-SUPABASE_SERVICE_KEY=your_service_role_key
-VITE_DATA_MODE=real
-VITE_API_BASE_URL=/api
-VITE_AUTH0_DOMAIN=your-tenant.auth0.com
-VITE_AUTH0_CLIENT_ID=your_spa_client_id
-VITE_AUTH0_AUDIENCE=https://api.wheezyleague.run
-```
-
-### 3.3 Note your Railway URL
-
-It will look like `https://wheezyleague-api.railway.app`. You'll need this next.
-
----
-
-## Part 4 — Deploy to Vercel
-
-### 4.1 Import on Vercel
-
-1. [vercel.com/new](https://vercel.com/new) → Import from GitHub
-2. Framework will be auto-detected as **Vite**
-3. Build command: `npm run build` (auto)
-4. Output directory: `dist` (auto)
-
-### 4.2 Set environment variables in Vercel
-
-```
-VITE_AUTH0_DOMAIN=your-tenant.auth0.com
-VITE_AUTH0_CLIENT_ID=your_spa_client_id
-VITE_AUTH0_AUDIENCE=https://api.wheezyleague.run
-VITE_DATA_MODE=real
-VITE_API_BASE_URL=https://wheezyleague-api.railway.app/api
-VITE_STRAVA_CLIENT_ID=     (if using)
-VITE_MAPMYRUN_CLIENT_ID=   (if using)
-```
-
-### 4.3 Deploy
-
-Click **Deploy**. Vercel runs `npm run build` and serves the `dist` folder. The `vercel.json` in the repo handles SPA routing — no extra config needed.
-
----
-
-## Part 5 — Auth0 Callback URLs
-
-Update your Auth0 app (Applications → Your App → Settings) with:
-
-| Field | Value |
-|-------|-------|
-| Allowed Callback URLs | `https://your-app.vercel.app, http://localhost:3000` |
-| Allowed Logout URLs   | `https://your-app.vercel.app, http://localhost:3000` |
-| Allowed Web Origins   | `https://your-app.vercel.app, http://localhost:3000` |
-
----
-
-## Production Checklist
-
-Before going live, confirm:
-
-- [ ] `VITE_DATA_MODE=real` on Vercel
-- [ ] `NODE_ENV=production` on Railway
-- [ ] `FRONTEND_URL` on Railway = your Vercel domain
-- [ ] Auth0 callback URLs updated with production domain
-- [ ] Supabase SQL schema applied
-- [ ] `SUPABASE_SERVICE_KEY` set on Railway (never expose in browser)
-- [ ] Railway service is healthy: `GET https://your-api.railway.app/health`
-- [ ] Vercel deployment succeeded and app loads
-- [ ] Login flow works end-to-end
-
----
-
-## Local Development (Supabase)
-
-You can also point local dev at Supabase:
+## Part 6 — Verify
 
 ```bash
-# backend/.env
-SUPABASE_URL=https://[REF].supabase.co
-SUPABASE_SERVICE_KEY=your_service_role_key
-NODE_ENV=development
+# Health check — should show version and env
+curl https://your-app.vercel.app/api/health
 
-npm run dev
-```
-
-Or stay in-memory (zero config) for purely frontend work:
-
-```bash
-# frontend .env.local
-VITE_DATA_MODE=demo   # no backend needed
-npm run dev
+# Test auth (replace TOKEN with a real access token from your browser devtools)
+curl https://your-app.vercel.app/api/notifications \
+  -H "Authorization: Bearer TOKEN"
 ```
 
 ---
 
-*The Wheezy League · docs/DEPLOY_SUPABASE.md*
+## Production checklist
+
+- [ ] Supabase SQL schema applied (Part 3)
+- [ ] `@supabase/supabase-js` installed in `backend/`
+- [ ] `backend/src/db.js` replaced with Supabase version (Part 4)
+- [ ] `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` set on Vercel
+- [ ] `VITE_DATA_MODE=real` set on Vercel
+- [ ] Redeployed on Vercel after env var changes
+- [ ] `/api/health` returns `{"ok":true}`
+- [ ] Login → profile loads without spinning
+- [ ] Notifications appear in bell dropdown
+- [ ] Posts persist after page refresh
+
+---
+
+*The Wheezy League · docs/DEPLOY_SUPABASE.md · v2026.6.0*

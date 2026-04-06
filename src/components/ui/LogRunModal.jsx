@@ -16,7 +16,9 @@ const BREATH_LEVELS = [
   { val: 'used-inhaler', label: 'Used inhaler',  color: 'red'   },
 ]
 
-const STRAVA_CLIENT_ID  = import.meta.env.VITE_STRAVA_CLIENT_ID   || ''
+const STRAVA_CLIENT_ID   = import.meta.env.VITE_STRAVA_CLIENT_ID   || ''
+// Must exactly match the Redirect URI registered in your Strava app settings
+const STRAVA_REDIRECT_URI = import.meta.env.VITE_STRAVA_REDIRECT_URI  || `${window.location.origin}/strava/callback`
 const MMR_CLIENT_ID     = import.meta.env.VITE_MAPMYRUN_CLIENT_ID || ''
 
 function pad(n) { return String(n).padStart(2, '0') }
@@ -78,7 +80,7 @@ export default function LogRunModal({ onClose, onSave }) {
     }
     const p = new URLSearchParams({
       client_id:       STRAVA_CLIENT_ID,
-      redirect_uri:    `${window.location.origin}/strava/callback`,
+      redirect_uri:    STRAVA_REDIRECT_URI,
       response_type:   'code',
       approval_prompt: 'auto',
       scope:           'activity:read_all',
