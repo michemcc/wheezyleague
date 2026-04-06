@@ -79,19 +79,18 @@
 .logo-name {
   font-family: var(--font-display);
   font-size: 0.98rem; font-weight: 700; line-height: 1;
-  /* inline-block collapses gaps; font-size:0 trick would kill child text */
   display: inline-block;
   letter-spacing: 0.02em; text-transform: uppercase;
   color: #111827;
-  /* Remove any word-spacing that browsers add */
-  word-spacing: 0;
+}
+/* "League" added via ::after with no gap — avoids any child-span spacing */
+.logo-name::after {
+  content: attr(data-league);
+  color: var(--neon-orange);
+  /* No letter-spacing on pseudo so no gap between Wheezy and League */
+  letter-spacing: 0.02em;
 }
 .dark .logo-name { color: #E8F0FF; }
-/* logo-accent is inline inside logo-name — no extra spacing */
-.logo-accent {
-  color: var(--neon-orange);
-  display: inline;
-}
 @media (max-width: 360px) { .logo-name { display: none; } }
 
 /* ── Desktop nav links ───────────────────────────── */

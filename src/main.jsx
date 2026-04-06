@@ -12,13 +12,11 @@ const clientId    = import.meta.env.VITE_AUTH0_CLIENT_ID
 const redirectUri = import.meta.env.VITE_AUTH0_REDIRECT_URI || window.location.origin
 const audience    = import.meta.env.VITE_AUTH0_AUDIENCE
 
-// After login, send user to /dashboard unless Auth0 has a specific returnTo
+// After login, navigate to /dashboard (or the returnTo path if set).
+// We use window.location so React Router picks up the new URL on remount.
 function onRedirectCallback(appState) {
-  window.history.replaceState(
-    {},
-    document.title,
-    appState?.returnTo || '/dashboard'
-  )
+  const dest = appState?.returnTo || '/dashboard'
+  window.location.replace(dest)
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

@@ -91,7 +91,7 @@ export default function Navbar() {
 
           <Link to="/" className="navbar-logo">
             <span className="logo-mark">WL</span>
-            <span className="logo-name">Wheezy<span className="logo-accent">League</span></span>
+            <span className="logo-name" data-league="League">Wheezy</span>
           </Link>
 
           {isAuthenticated && (

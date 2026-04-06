@@ -25,7 +25,11 @@
   color: #EBF0FF;
   letter-spacing: 0.04em; text-transform: uppercase;
   display: inline-block;
-  word-spacing: 0;
+}
+.footer-logo-name::after {
+  content: attr(data-league);
+  color: var(--neon-orange);
+  letter-spacing: 0.04em;
 }
 
 /* Tagline */

@@ -21,7 +21,7 @@ export default function Footer() {
         {/* Brand */}
         <Link to="/" className="footer-logo">
           <span className="logo-mark">WL</span>
-          <span className="footer-logo-name">Wheezy<span style={{ color: 'var(--neon-orange)' }}>League</span></span>
+          <span className="footer-logo-name" data-league="League">Wheezy</span>
         </Link>
 
         <p className="footer-tagline">
