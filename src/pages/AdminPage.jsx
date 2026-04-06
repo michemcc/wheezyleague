@@ -66,7 +66,10 @@ function RewardsSection({ isDemo, getToken }) {
       const token = await getToken()
       const res   = await fetch(`${API}/admin/rewards`, { headers: { Authorization: `Bearer ${token}` } })
       setRewards(await res.json())
-    } catch { setRewards(DEMO_REWARDS) }
+    } catch (e) {
+      showToast('API error: ' + (e.message || 'check backend is running'))
+      setRewards([])
+    }
     finally { setLoading(false) }
   }, [isDemo, getToken])
 
@@ -211,7 +214,10 @@ function ChallengesSection({ isDemo, getToken }) {
       const token = await getToken()
       const res   = await fetch(`${API}/admin/challenges`, { headers: { Authorization: `Bearer ${token}` } })
       setChallenges(await res.json())
-    } catch { setChallenges(DEMO_CHALLENGES) }
+    } catch (e) {
+      showToast('API error: ' + (e.message || 'check backend is running'))
+      setChallenges([])
+    }
     finally { setLoading(false) }
   }, [isDemo, getToken])
 
@@ -348,7 +354,7 @@ export default function AdminPage() {
         const token = await getToken()
         const res   = await fetch(`${API}/admin/stats`, { headers: { Authorization: `Bearer ${token}` } })
         setStats(await res.json())
-      } catch { setStats(DEMO_STATS) }
+      } catch (e) { console.error('Admin stats error:', e); setStats(null) }
     }
     load()
   }, [isDemo, getToken])

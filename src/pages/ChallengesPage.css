@@ -6,3 +6,41 @@
 .challenges-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr)); gap:var(--gutter); }
 .rewards-list { display:flex; flex-direction:column; gap:.08rem; }
 @media (max-width:900px) { .challenges-layout { grid-template-columns:1fr; } }
+.challenges-hero-stat { display:flex; gap:.65rem; flex-wrap:wrap; margin-top:.85rem; }
+.hero-stat-pill {
+  display:flex; flex-direction:column; gap:.2rem;
+  padding:.7rem 1rem; border-radius:var(--r-sm);
+  background:var(--brand-pale); border:1px solid rgba(255,107,26,0.18); min-width:100px;
+}
+.hero-stat-pill--amber { background:var(--amber-light,#FEF3C7); border-color:rgba(245,158,11,.25); }
+.hero-stat-pill-num {
+  font-family:var(--font-display); font-size:1.55rem; font-weight:700;
+  color:var(--neon-orange); line-height:1; letter-spacing:.02em;
+}
+.hero-stat-pill--amber .hero-stat-pill-num { color:#B45309; }
+.hero-stat-pill-label { font-family:var(--font-mono); font-size:.62rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.06em; }
+
+/* Sidebar */
+.challenges-sidebar { display:flex; flex-direction:column; gap:var(--gutter); position:sticky; top:calc(var(--nav-h) + 1rem); }
+
+/* Leaderboard rows */
+.lb-row { display:flex; align-items:center; gap:.6rem; padding:.52rem 0; border-bottom:1px solid var(--border); }
+.lb-row:last-child { border-bottom:none; }
+.lb-rank { font-family:var(--font-mono); font-size:.72rem; font-weight:700; color:var(--text-4); min-width:1.4rem; }
+.lb-rank--1,.lb-rank--2,.lb-rank--3 { color:#B45309; }
+.dark .lb-rank--1,.dark .lb-rank--2,.dark .lb-rank--3 { color:var(--neon-gold); }
+.lb-info { flex:1; min-width:0; }
+.lb-info strong { display:block; font-family:var(--font-display); font-size:.82rem; color:var(--text-1); letter-spacing:.03em; text-transform:uppercase; }
+.lb-info span   { font-size:.68rem; color:var(--text-4); font-family:var(--font-mono); }
+.lb-pts { font-family:var(--font-mono); font-size:.72rem; font-weight:700; color:var(--neon-orange); white-space:nowrap; }
+
+/* Reward rows in sidebar */
+.reward-row  { display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.48rem 0; border-bottom:1px solid var(--border); }
+.reward-row:last-child { border-bottom:none; }
+.reward-name { font-size:.78rem; color:var(--text-2); flex:1; min-width:0; }
+.dark .reward-name { color:var(--text-2); }
+
+@media (max-width:900px) {
+  .challenges-layout { grid-template-columns:1fr; }
+  .challenges-sidebar { position:static; }
+}

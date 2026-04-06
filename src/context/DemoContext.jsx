@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { useAuth0 } from '@auth0/auth0-react'
 
 const DemoContext = createContext(null)
 
@@ -13,13 +14,15 @@ const INITIAL_NOTIFICATIONS = [
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
-export function DemoProvider({ children }) {
-  // Default to live mode. Set VITE_DATA_MODE=demo in .env.local to default to demo.
+// Inner provider that has access to Auth0 hooks
+function DemoProviderInner({ children }) {
+  const { isAuthenticated, getAccessTokenSilently, user } = useAuth0()
+
   const envMode = import.meta.env.VITE_DATA_MODE === 'demo'
   const [isDemo,        setIsDemo]        = useState(envMode)
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS)
-  const [liveProfile,   setLiveProfile]   = useState(null)  // real XP/level from API
-  const [darkMode, setDarkMode] = useState(() => {
+  const [liveProfile,   setLiveProfile]   = useState(null)
+  const [darkMode,      setDarkMode]      = useState(() => {
     try {
       const stored = localStorage.getItem('sw-dark')
       return stored === null ? false : stored === 'true'
@@ -32,72 +35,87 @@ export function DemoProvider({ children }) {
     try { localStorage.setItem('sw-dark', String(darkMode)) } catch {}
   }, [darkMode])
 
-  // Fetch real notifications + profile from API in live mode
-  // This runs whenever isDemo changes so switching modes refreshes data
+  // Fetch live data whenever auth state or demo mode changes
   useEffect(() => {
-    if (isDemo) {
+    if (isDemo || !isAuthenticated) {
       setNotifications(INITIAL_NOTIFICATIONS)
       setLiveProfile(null)
       return
     }
-    // Read the stored Auth0 token from localstorage (set by cacheLocation="localstorage")
-    const getStoredToken = () => {
+
+    let cancelled = false
+
+    const fetchLiveData = async () => {
       try {
-        const keys = Object.keys(localStorage).filter(k => k.startsWith('@@auth0spajs@@'))
-        for (const k of keys) {
-          const data = JSON.parse(localStorage.getItem(k))
-          const token = data?.body?.access_token || data?.body?.id_token
-          if (token) return token
+        const token = await getAccessTokenSilently({
+          authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
+        })
+        if (cancelled) return
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         }
-      } catch {}
-      return null
+
+        // Fetch notifications
+        const nRes = await fetch(`${API_BASE}/notifications`, { headers })
+        if (!cancelled && nRes.ok) {
+          const data = await nRes.json()
+          if (Array.isArray(data) && data.length > 0) setNotifications(data)
+        }
+
+        // Fetch profile for real XP/level
+        if (user?.sub) {
+          const pRes = await fetch(
+            `${API_BASE}/users/${encodeURIComponent(user.sub)}/profile`,
+            { headers }
+          )
+          if (!cancelled && pRes.ok) {
+            const data = await pRes.json()
+            if (data) setLiveProfile(data)
+          }
+        }
+      } catch (err) {
+        // Token not available yet or network error — stay on demo data
+        console.debug('[DemoContext] live fetch skipped:', err?.message)
+      }
     }
 
-    const token = getStoredToken()
-    if (!token) return  // not logged in yet
+    fetchLiveData()
+    return () => { cancelled = true }
+  }, [isDemo, isAuthenticated, user?.sub, getAccessTokenSilently])
 
-    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-
-    // Fetch notifications
-    fetch(`${API_BASE}/notifications`, { headers })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (Array.isArray(data) && data.length) setNotifications(data) })
-      .catch(() => {})
-
-    // Fetch profile for XP/level
-    const userId = (() => {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))
-        return payload.sub
-      } catch { return null }
-    })()
-    if (userId) {
-      fetch(`${API_BASE}/users/${encodeURIComponent(userId)}/profile`, { headers })
-        .then(r => r.ok ? r.json() : null)
-        .then(data => { if (data) setLiveProfile(data) })
-        .catch(() => {})
-    }
-  }, [isDemo])
-
-  const toggleDemo  = useCallback(() => setIsDemo(d => !d), [])
-  const toggleDark  = useCallback(() => setDarkMode(d => !d), [])
+  const toggleDemo = useCallback(() => setIsDemo(d => !d), [])
+  const toggleDark = useCallback(() => setDarkMode(d => !d), [])
   const unreadCount = notifications.filter(n => !n.read).length
 
   const markAllRead = useCallback(async () => {
     setNotifications(ns => ns.map(n => ({ ...n, read: true })))
-    if (!isDemo) {
-      const token = (() => { try { const k = Object.keys(localStorage).find(k=>k.startsWith('@@auth0spajs@@')); return k ? JSON.parse(localStorage.getItem(k))?.body?.access_token : null } catch { return null } })()
-      if (token) fetch(`${API_BASE}/notifications/read`, { method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body: JSON.stringify({}) }).catch(()=>{})
+    if (!isDemo && isAuthenticated) {
+      try {
+        const token = await getAccessTokenSilently({ authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE } })
+        fetch(`${API_BASE}/notifications/read`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        }).catch(() => {})
+      } catch {}
     }
-  }, [isDemo])
+  }, [isDemo, isAuthenticated, getAccessTokenSilently])
 
   const markRead = useCallback(async (id) => {
     setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n))
-    if (!isDemo) {
-      const token = (() => { try { const k = Object.keys(localStorage).find(k=>k.startsWith('@@auth0spajs@@')); return k ? JSON.parse(localStorage.getItem(k))?.body?.access_token : null } catch { return null } })()
-      if (token) fetch(`${API_BASE}/notifications/read`, { method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body: JSON.stringify({ ids:[id] }) }).catch(()=>{})
+    if (!isDemo && isAuthenticated) {
+      try {
+        const token = await getAccessTokenSilently({ authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE } })
+        fetch(`${API_BASE}/notifications/read`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: [id] }),
+        }).catch(() => {})
+      } catch {}
     }
-  }, [isDemo])
+  }, [isDemo, isAuthenticated, getAccessTokenSilently])
 
   return (
     <DemoContext.Provider value={{
@@ -105,11 +123,16 @@ export function DemoProvider({ children }) {
       notifications, unreadCount, markAllRead, markRead,
       darkMode, toggleDark,
       avatarUrl, setAvatarUrl,
-      liveProfile,   // real XP/level — null in demo mode
+      liveProfile,
     }}>
       {children}
     </DemoContext.Provider>
   )
+}
+
+// Outer wrapper — Auth0Provider must be an ancestor for useAuth0 to work
+export function DemoProvider({ children }) {
+  return <DemoProviderInner>{children}</DemoProviderInner>
 }
 
 export function useDemo() {

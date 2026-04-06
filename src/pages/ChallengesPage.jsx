@@ -81,11 +81,11 @@ export default function ChallengesPage() {
         <div className="challenges-hero-stat">
           <div className="hero-stat-pill">
             <span className="hero-stat-pill-num">3</span>
-            <span>Active Challenges</span>
+            <span className="hero-stat-pill-label">Active Challenges</span>
           </div>
           <div className="hero-stat-pill hero-stat-pill--amber">
             <span className="hero-stat-pill-num">1,550</span>
-            <span>Points Earned</span>
+            <span className="hero-stat-pill-label">Points Earned</span>
           </div>
         </div>
       </div>
