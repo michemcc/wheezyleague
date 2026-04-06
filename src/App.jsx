@@ -17,7 +17,8 @@ import AdminPage      from './pages/AdminPage'
 import AboutPage      from './pages/AboutPage'
 import ContactPage    from './pages/ContactPage'
 import PrivacyPage    from './pages/PrivacyPage'
-import CallbackPage   from './pages/CallbackPage'
+import CallbackPage        from './pages/CallbackPage'
+import StravaCallbackPage  from './pages/StravaCallbackPage'
 
 export default function App() {
   const { isLoading } = useAuth0()
@@ -29,7 +30,8 @@ export default function App() {
       <Routes>
         {/* Public */}
         <Route path="/"           element={<HomePage />} />
-        <Route path="/callback"   element={<CallbackPage />} />
+        <Route path="/callback"          element={<CallbackPage />} />
+        <Route path="/strava/callback"   element={<StravaCallbackPage />} />
         <Route path="/about"      element={<AboutPage />} />
         <Route path="/contact"    element={<ContactPage />} />
         <Route path="/privacy"    element={<PrivacyPage />} />

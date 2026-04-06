@@ -55,7 +55,9 @@ export default function Navbar() {
   }, [mobileOpen])
 
   const isActive = to => location.pathname === to
-  const profile  = (!isDemo && liveProfile) ? liveProfile : DEMO_PROFILE
+  // In live mode: use real profile if loaded, else blank slate (0s) — never show demo data
+  const LIVE_BLANK = { level: 1, xp: 0, xpToNext: 500, name: '', email: '' }
+  const profile  = isDemo ? DEMO_PROFILE : (liveProfile || LIVE_BLANK)
   const firstName = user?.given_name || user?.name?.split(' ')[0] || 'Runner'
 
   const openBell = () => {
@@ -76,14 +78,16 @@ export default function Navbar() {
     <div className="nav-stack">
 
       {/* ── Demo Banner ── */}
-      <div className={`demo-banner-bar${isDemo ? ' demo-banner-bar--demo' : ' demo-banner-bar--live'}`}>
-        <span className="demo-banner-dot" aria-hidden="true" />
-        <span className="demo-banner-text">{isDemo ? 'Demo Mode' : 'Live Mode'}</span>
-        <button className="demo-toggle-btn" onClick={toggleDemo} aria-label="Toggle demo/live mode">
-          <span className={`demo-knob${isDemo ? '' : ' demo-knob--live'}`} />
-        </button>
-        <span className="demo-banner-hint">{isDemo ? 'Mock data' : 'Real backend'}</span>
-      </div>
+      {isDemo && (
+        <div className="demo-banner-bar">
+          <span className="demo-banner-dot" aria-hidden="true" />
+          <span className="demo-banner-text">Demo Mode — Mock Data</span>
+          <button className="demo-toggle-btn" onClick={toggleDemo} aria-label="Switch to live mode">
+            <span className="demo-knob" />
+          </button>
+          <span className="demo-banner-hint">Switch to live</span>
+        </div>
+      )}
 
       {/* ── Navbar ── */}
       <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}`}>

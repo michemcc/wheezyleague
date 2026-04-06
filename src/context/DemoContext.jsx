@@ -20,7 +20,8 @@ function DemoProviderInner({ children }) {
 
   const envMode = import.meta.env.VITE_DATA_MODE === 'demo'
   const [isDemo,        setIsDemo]        = useState(envMode)
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS)
+  // Start empty in live mode — real notifications fetched on auth. Demo gets seeded data.
+  const [notifications, setNotifications] = useState(envMode ? INITIAL_NOTIFICATIONS : [])
   const [liveProfile,   setLiveProfile]   = useState(null)
   const [darkMode,      setDarkMode]      = useState(() => {
     try {

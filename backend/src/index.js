@@ -59,6 +59,7 @@ app.use('/api/challenges', authMiddleware, requireMember, require('./routes/chal
 app.use('/api/routes',     authMiddleware, requireMember, require('./routes/routes'))
 app.use('/api/symptoms',      authMiddleware, requireMember, require('./routes/symptoms'))
 app.use('/api/notifications', authMiddleware, requireMember, require('./routes/notifications'))
+app.use('/api/strava',         authMiddleware, requireMember, require('./routes/strava'))
 app.use('/api/admin',      authMiddleware, requireRole('admin'), require('./routes/admin'))
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
