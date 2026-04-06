@@ -11,20 +11,20 @@ const INITIAL_NOTIFICATIONS = [
   { id: 6, icon: '🎉', title: 'New Badge',        body: 'You earned the "Sunrise Runner" badge!',                 time: '1d ago',  read: true  },
 ]
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
+
 export function DemoProvider({ children }) {
   // Default to live mode. Set VITE_DATA_MODE=demo in .env.local to default to demo.
   const envMode = import.meta.env.VITE_DATA_MODE === 'demo'
-  const [isDemo,         setIsDemo]         = useState(envMode)
-  const [notifications,  setNotifications]  = useState(INITIAL_NOTIFICATIONS)
+  const [isDemo,        setIsDemo]        = useState(envMode)
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS)
+  const [liveProfile,   setLiveProfile]   = useState(null)  // real XP/level from API
   const [darkMode, setDarkMode] = useState(() => {
     try {
       const stored = localStorage.getItem('sw-dark')
-      // Default to light mode if no preference stored
       return stored === null ? false : stored === 'true'
     } catch { return false }
   })
-  // Shared avatar URL — set by ProfilePage when user uploads a photo,
-  // read by Navbar so the topbar chip updates immediately
   const [avatarUrl, setAvatarUrl] = useState(null)
 
   useEffect(() => {
@@ -32,11 +32,72 @@ export function DemoProvider({ children }) {
     try { localStorage.setItem('sw-dark', String(darkMode)) } catch {}
   }, [darkMode])
 
-  const toggleDemo   = useCallback(() => setIsDemo(d => !d), [])
-  const toggleDark   = useCallback(() => setDarkMode(d => !d), [])
-  const unreadCount  = notifications.filter(n => !n.read).length
-  const markAllRead  = useCallback(() => setNotifications(ns => ns.map(n => ({ ...n, read: true }))), [])
-  const markRead     = useCallback(id  => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n)), [])
+  // Fetch real notifications + profile from API in live mode
+  // This runs whenever isDemo changes so switching modes refreshes data
+  useEffect(() => {
+    if (isDemo) {
+      setNotifications(INITIAL_NOTIFICATIONS)
+      setLiveProfile(null)
+      return
+    }
+    // Read the stored Auth0 token from localstorage (set by cacheLocation="localstorage")
+    const getStoredToken = () => {
+      try {
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('@@auth0spajs@@'))
+        for (const k of keys) {
+          const data = JSON.parse(localStorage.getItem(k))
+          const token = data?.body?.access_token || data?.body?.id_token
+          if (token) return token
+        }
+      } catch {}
+      return null
+    }
+
+    const token = getStoredToken()
+    if (!token) return  // not logged in yet
+
+    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+
+    // Fetch notifications
+    fetch(`${API_BASE}/notifications`, { headers })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (Array.isArray(data) && data.length) setNotifications(data) })
+      .catch(() => {})
+
+    // Fetch profile for XP/level
+    const userId = (() => {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))
+        return payload.sub
+      } catch { return null }
+    })()
+    if (userId) {
+      fetch(`${API_BASE}/users/${encodeURIComponent(userId)}/profile`, { headers })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data) setLiveProfile(data) })
+        .catch(() => {})
+    }
+  }, [isDemo])
+
+  const toggleDemo  = useCallback(() => setIsDemo(d => !d), [])
+  const toggleDark  = useCallback(() => setDarkMode(d => !d), [])
+  const unreadCount = notifications.filter(n => !n.read).length
+
+  const markAllRead = useCallback(async () => {
+    setNotifications(ns => ns.map(n => ({ ...n, read: true })))
+    if (!isDemo) {
+      const token = (() => { try { const k = Object.keys(localStorage).find(k=>k.startsWith('@@auth0spajs@@')); return k ? JSON.parse(localStorage.getItem(k))?.body?.access_token : null } catch { return null } })()
+      if (token) fetch(`${API_BASE}/notifications/read`, { method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body: JSON.stringify({}) }).catch(()=>{})
+    }
+  }, [isDemo])
+
+  const markRead = useCallback(async (id) => {
+    setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n))
+    if (!isDemo) {
+      const token = (() => { try { const k = Object.keys(localStorage).find(k=>k.startsWith('@@auth0spajs@@')); return k ? JSON.parse(localStorage.getItem(k))?.body?.access_token : null } catch { return null } })()
+      if (token) fetch(`${API_BASE}/notifications/read`, { method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body: JSON.stringify({ ids:[id] }) }).catch(()=>{})
+    }
+  }, [isDemo])
 
   return (
     <DemoContext.Provider value={{
@@ -44,6 +105,7 @@ export function DemoProvider({ children }) {
       notifications, unreadCount, markAllRead, markRead,
       darkMode, toggleDark,
       avatarUrl, setAvatarUrl,
+      liveProfile,   // real XP/level — null in demo mode
     }}>
       {children}
     </DemoContext.Provider>

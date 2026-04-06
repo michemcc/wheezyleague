@@ -25,19 +25,19 @@ async function _apiFetch(path, options = {}, token = null) {
   return res.json()
 }
 
-export async function getDashboard(userId, isDemo) {
+export async function getDashboard(userId, isDemo, token = null) {
   if (isDemo) return DEMO_DASHBOARD
-  return _apiFetch(`/users/${userId}/dashboard`).catch(() => null)
+  return _apiFetch(`/users/${userId}/dashboard`, {}, token).catch(() => null)
 }
 
-export async function getProfile(userId, isDemo) {
+export async function getProfile(userId, isDemo, token = null) {
   if (isDemo) return DEMO_PROFILE
-  return _apiFetch(`/users/${userId}/profile`).catch(() => null)
+  return _apiFetch(`/users/${userId}/profile`, {}, token).catch(() => null)
 }
 
-export async function updateProfile(userId, payload, isDemo) {
+export async function updateProfile(userId, payload, isDemo, token = null) {
   if (isDemo) { await new Promise(r => setTimeout(r, 600)); return { ...DEMO_PROFILE, ...payload } }
-  return _apiFetch(`/users/${userId}/profile`, { method: 'PATCH', body: JSON.stringify(payload) })
+  return _apiFetch(`/users/${userId}/profile`, { method: 'PATCH', body: JSON.stringify(payload) }, token)
 }
 
 export async function getPosts({ page = 1, filter = 'all' } = {}, isDemo) {

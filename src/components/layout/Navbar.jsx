@@ -16,7 +16,7 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const { isAuthenticated, user, loginWithRedirect, logout, isLoading } = useAuth0()
-  const { isDemo, toggleDemo, notifications, unreadCount, markAllRead, markRead, darkMode, toggleDark, avatarUrl } = useDemo()
+  const { isDemo, toggleDemo, notifications, unreadCount, markAllRead, markRead, darkMode, toggleDark, avatarUrl, liveProfile } = useDemo()
   const { hasRole } = useAuth()
 
   const [userOpen,   setUserOpen]   = useState(false)
@@ -55,7 +55,7 @@ export default function Navbar() {
   }, [mobileOpen])
 
   const isActive = to => location.pathname === to
-  const profile  = DEMO_PROFILE
+  const profile  = (!isDemo && liveProfile) ? liveProfile : DEMO_PROFILE
   const firstName = user?.given_name || user?.name?.split(' ')[0] || 'Runner'
 
   const openBell = () => {

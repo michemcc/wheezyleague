@@ -57,7 +57,8 @@ app.use('/api/users',      authMiddleware, requireMember, require('./routes/user
 app.use('/api/posts',      authMiddleware, requireMember, require('./routes/posts'))
 app.use('/api/challenges', authMiddleware, requireMember, require('./routes/challenges'))
 app.use('/api/routes',     authMiddleware, requireMember, require('./routes/routes'))
-app.use('/api/symptoms',   authMiddleware, requireMember, require('./routes/symptoms'))
+app.use('/api/symptoms',      authMiddleware, requireMember, require('./routes/symptoms'))
+app.use('/api/notifications', authMiddleware, requireMember, require('./routes/notifications'))
 app.use('/api/admin',      authMiddleware, requireRole('admin'), require('./routes/admin'))
 
 // ── 404 ───────────────────────────────────────────────────────────────────────

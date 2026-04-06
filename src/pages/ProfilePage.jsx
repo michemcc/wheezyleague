@@ -6,6 +6,7 @@ import './ProfilePage.css'
 
 export default function ProfilePage() {
   const { user } = useAuth0()
+  const { getToken } = useAuth()
   const { isDemo, setAvatarUrl } = useDemo()
   const [profile, setProfile] = useState(null)
   const [editing, setEditing]   = useState(false)
@@ -17,10 +18,14 @@ export default function ProfilePage() {
   const formTopRef   = useRef(null)
 
   useEffect(() => {
-    getProfile(user?.sub || 'demo', isDemo).then(p => {
-      setProfile(p)
-      setForm(p)
-    })
+    const loadProfile = async () => {
+      try {
+        const token = isDemo ? null : await getToken().catch(() => null)
+        const p = await getProfile(user?.sub || 'demo', isDemo, token)
+        if (p) { setProfile(p); setForm(p) }
+      } catch (e) { console.error('Profile load error:', e) }
+    }
+    loadProfile()
   }, [user, isDemo])
 
   // Scroll to top of form when editing starts
@@ -34,7 +39,8 @@ export default function ProfilePage() {
     e.preventDefault()
     setSaving(true)
     const payload = avatarPreview ? { ...form, avatarPreview } : form
-    const updated = await updateProfile(user?.sub || 'demo', payload, isDemo)
+    const token   = isDemo ? null : await getToken().catch(() => null)
+    const updated = await updateProfile(user?.sub || 'demo', payload, isDemo, token)
     setProfile(updated)
     setSaving(false)
     setEditing(false)

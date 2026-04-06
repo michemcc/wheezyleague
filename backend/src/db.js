@@ -23,7 +23,8 @@ const _symptoms  = new Map()   // userId → symptom entries[]
 const _posts     = []          // flat array (paginated in route)
 const _comments  = new Map()   // postId → comment entries[]
 const _joined    = new Map()   // userId → Set<challengeId>
-const _saved     = new Map()   // userId → Set<routeId>
+const _saved         = new Map()   // userId → Set<routeId>
+const _notifications  = new Map()   // userId → notification[]
 
 // Rewards — admin-manageable
 const _rewards = [
@@ -170,6 +171,30 @@ async function createComment(postId, { sub, name, body }) {
   return comment
 }
 
+// ── Notifications ────────────────────────────────────────────────────────────
+async function listNotifications(sub) {
+  if (!_notifications.has(sub)) {
+    // Seed with a welcome notification on first access
+    _notifications.set(sub, [
+      { id: uuid(), icon: '🫁', title: 'Welcome to The Wheezy League!', body: 'Your journey starts here. Log your first run to earn XP.', time: 'Just now', read: false, createdAt: new Date().toISOString() },
+    ])
+  }
+  return _notifications.get(sub)
+}
+
+async function markNotificationsRead(sub, ids = null) {
+  const notifs = await listNotifications(sub)
+  notifs.forEach(n => { if (!ids || ids.includes(n.id)) n.read = true })
+  return notifs
+}
+
+async function createNotification(sub, { icon, title, body }) {
+  const notif = { id: uuid(), icon, title, body, time: 'Just now', read: false, createdAt: new Date().toISOString() }
+  if (!_notifications.has(sub)) _notifications.set(sub, [])
+  _notifications.get(sub).unshift(notif)
+  return notif
+}
+
 // ── Rewards ──────────────────────────────────────────────────────────────────
 async function listRewards() { return _rewards }
 
@@ -225,6 +250,7 @@ async function getAdminStats() {
 
 module.exports = {
   getUser, upsertUser, updateUser,
+  listNotifications, markNotificationsRead, createNotification,
   getStats,
   listPosts, createPost, likePost, deletePost,
   listComments, createComment,

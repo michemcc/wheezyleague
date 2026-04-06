@@ -244,33 +244,33 @@ export default function LogRunModal({ onClose, onSave }) {
           <div className="integration-body">
             <div className="int-hero">
               <span className="int-logo strava-color">🟠</span>
-              <h3>Strava</h3>
-              <p>Import runs directly from Strava for automatic challenge validation. Free API with generous rate limits.</p>
+              <h3>Connect Strava</h3>
+              <p>Import your runs automatically. Strava activities sync in real time and count toward challenges immediately.</p>
             </div>
-            <div className="int-features">
-              {[
-                { icon:'✅', t:'Auto-validated',  d:'Runs sync and count toward challenges immediately.' },
-                { icon:'📊', t:'Full stats',       d:'Distance, pace, elevation, HR — all imported.' },
-                { icon:'🔒', t:'Read-only',        d:'The Wheezy League never posts or modifies your Strava data.' },
-                { icon:'🆓', t:'Free API',         d:'Strava API is free — 100 req/15 min, 1,000/day.' },
-              ].map(f => (
-                <div key={f.t} className="int-feature">
-                  <span>{f.icon}</span>
-                  <div><strong>{f.t}</strong><p>{f.d}</p></div>
+            {STRAVA_CLIENT_ID ? (
+              <>
+                <div className="int-features">
+                  {[
+                    { icon:'✅', t:'Auto-validated',  d:'Runs count toward challenges the moment they sync.' },
+                    { icon:'📊', t:'Full stats',       d:'Distance, pace, elevation and HR all imported.' },
+                    { icon:'🔒', t:'Read-only',        d:'We never post to or modify your Strava account.' },
+                  ].map(f => (
+                    <div key={f.t} className="int-feature">
+                      <span>{f.icon}</span>
+                      <div><strong>{f.t}</strong><p>{f.d}</p></div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="int-setup">
-              <p className="int-setup-label">⚙️ Quick setup</p>
-              <ol>
-                <li>Create free app at <a href="https://www.strava.com/settings/api" target="_blank" rel="noreferrer">strava.com/settings/api</a></li>
-                <li>Add <code>VITE_STRAVA_CLIENT_ID</code> + backend <code>STRAVA_CLIENT_SECRET</code> to your .env files</li>
-                <li>Full guide: <code>docs/STRAVA_SETUP.md</code></li>
-              </ol>
-            </div>
-            <button className="btn int-connect-btn strava-btn" onClick={connectStrava}>
-              {STRAVA_CLIENT_ID ? '🟠 Connect Strava' : '📖 View Setup Guide'}
-            </button>
+                <button className="btn int-connect-btn strava-btn" onClick={connectStrava}>
+                  🟠 Connect with Strava
+                </button>
+                <p className="int-note">You'll be taken to Strava to authorise read-only access, then returned here.</p>
+              </>
+            ) : (
+              <div className="int-not-configured">
+                <p>Strava isn't configured yet. Add <code>VITE_STRAVA_CLIENT_ID</code> to your environment variables to enable this integration.</p>
+              </div>
+            )}
           </div>
         )}
 
