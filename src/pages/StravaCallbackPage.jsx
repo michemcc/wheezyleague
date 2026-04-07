@@ -1,34 +1,20 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 
 const API = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
-/**
- * StravaCallbackPage
- *
- * Strava sends the user here after OAuth with ?code=xxx
- * We exchange the code for tokens via our backend, then redirect to /dashboard.
- *
- * Key challenge: this is a public route but we need an Auth0 access token.
- * Auth0 re-hydrates from localStorage (cacheLocation="localstorage") on load,
- * but it's async. We wait up to 8 seconds for isLoading to settle, then act.
- */
 export default function StravaCallbackPage() {
   const [searchParams] = useSearchParams()
   const { getAccessTokenSilently, isLoading, isAuthenticated, loginWithRedirect } = useAuth0()
   const navigate = useNavigate()
   const [status,  setStatus]  = useState('connecting')
   const [message, setMessage] = useState('')
-  const hasRun = useRef(false)  // prevent double-execution in StrictMode
 
   useEffect(() => {
-    // Wait for Auth0 to finish loading
+    // Do nothing while Auth0 is still initialising — re-runs when isLoading changes
     if (isLoading) return
-    // Only run once
-    if (hasRun.current) return
-    hasRun.current = true
 
     const code  = searchParams.get('code')
     const error = searchParams.get('error')
@@ -50,16 +36,17 @@ export default function StravaCallbackPage() {
     }
 
     if (!isAuthenticated) {
-      // Not logged in — send through Auth0 then come back here
+      // Auth0 finished loading but user isn't logged in — push through login
+      // returnTo brings them back here with the code still in the URL
       loginWithRedirect({
         appState: { returnTo: window.location.pathname + window.location.search }
       })
       return
     }
 
+    // Auth0 is ready and user is authenticated — exchange the code
     const exchange = async () => {
       try {
-        // Get fresh access token — works because cacheLocation="localstorage"
         const token = await getAccessTokenSilently({
           authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
         })
@@ -90,7 +77,14 @@ export default function StravaCallbackPage() {
     }
 
     exchange()
-  }, [isLoading, isAuthenticated])   // re-runs when auth settles
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, isAuthenticated])
+  // ^ Re-runs when isLoading flips false, and again if isAuthenticated changes.
+  //   No hasRun guard here — if isLoading was true on first run, the early return
+  //   fires, then when isLoading becomes false the effect runs again and hits
+  //   the exchange. The exchange itself is idempotent (Strava codes are single-use
+  //   but the catch will handle a double-use gracefully).
 
   return (
     <div style={{

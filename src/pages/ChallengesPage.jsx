@@ -132,7 +132,7 @@ export default function ChallengesPage() {
         <aside className="challenges-sidebar">
           <div className="card sidebar-card">
             <h3 className="sidebar-title">🏅 All-Time Leaderboard</h3>
-            {LEADERBOARD.map(m => (
+            {(isDemo ? LEADERBOARD : leaderboard).map(m => (
               <div key={m.rank} className="lb-row">
                 <span className={`lb-rank lb-rank--${m.rank}`}>#{m.rank}</span>
                 <div className="avatar avatar-sm">{m.emoji}</div>

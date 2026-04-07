@@ -86,7 +86,7 @@ export default function LogRunModal({ onClose, onSave }) {
       redirect_uri:    STRAVA_REDIRECT_URI,
       response_type:   'code',
       approval_prompt: 'auto',
-      scope:           'activity:read_all',
+      scope:           'read,activity:read_all',
     })
     window.location.href = `https://www.strava.com/oauth/authorize?${p}`
   }
