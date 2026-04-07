@@ -27,8 +27,8 @@
   --glow-green-sm:  0 0 6px rgba(0,255,148,0.5),  0 0 14px rgba(0,255,148,0.15);
 
   /* ── SURFACES (light mode default) ── */
-  --bg:        #F8F9FC;   /* page — very light cool grey */
-  --surface:   #FFFFFF;   /* card — pure white */
+  --bg:        #F4F6FA;   /* page — cool grey */
+  --surface:   #FFFFFF;   /* card */
   --surface-2: #F0F2F7;   /* inset / secondary */
   --surface-3: #E2E6F0;   /* dividers / borders */
   --surface-4: #D4DAE8;   /* hover / active */

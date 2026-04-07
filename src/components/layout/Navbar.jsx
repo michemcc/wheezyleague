@@ -2,28 +2,28 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useDemo } from '../../context/DemoContext'
-import useAuth from '../../hooks/useAuth'
 import { DEMO_PROFILE } from '../../data/profile'
+import useAuth from '../../hooks/useAuth'
 import './Navbar.css'
 
-const NAV_LINKS = [
-  { to: '/dashboard',  label: 'Dashboard',  icon: '📊' },
-  { to: '/community',  label: 'Community',  icon: '👥' },
-  { to: '/challenges', label: 'Challenges', icon: '🏆' },
-  { to: '/routes',     label: 'Routes',     icon: '🗺️' },
-  { to: '/incentives', label: 'Rewards',    icon: '🎁' },
+const NAV = [
+  { to: '/dashboard',  label: 'Dashboard',  icon: '⬡' },
+  { to: '/community',  label: 'Community',  icon: '◈' },
+  { to: '/challenges', label: 'Challenges', icon: '◉' },
+  { to: '/routes',     label: 'Routes',     icon: '◎' },
+  { to: '/incentives', label: 'Rewards',    icon: '◆' },
 ]
 
 export default function Navbar() {
   const { isAuthenticated, user, loginWithRedirect, logout, isLoading } = useAuth0()
-  const { isDemo, toggleDemo, notifications, unreadCount, markAllRead, markRead, darkMode, toggleDark, avatarUrl, liveProfile } = useDemo()
+  const { isDemo, toggleDemo, notifications, unreadCount, markAllRead, markRead,
+          darkMode, toggleDark, avatarUrl, liveProfile } = useDemo()
   const { hasRole } = useAuth()
 
   const [userOpen,   setUserOpen]   = useState(false)
   const [bellOpen,   setBellOpen]   = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled,   setScrolled]   = useState(false)
-  // Positions for fixed-positioned panels
   const [bellPos, setBellPos] = useState({ top: 0, right: 0 })
   const [userPos, setUserPos] = useState({ top: 0, right: 0 })
 
@@ -32,13 +32,11 @@ export default function Navbar() {
   const location = useLocation()
 
   useEffect(() => { setUserOpen(false); setBellOpen(false); setMobileOpen(false) }, [location.pathname])
-
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 4)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
-
   useEffect(() => {
     if (!userOpen && !bellOpen) return
     const h = e => {
@@ -48,61 +46,52 @@ export default function Navbar() {
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [userOpen, bellOpen])
-
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [mobileOpen])
 
   const isActive = to => location.pathname === to
-  // In live mode: use real profile if loaded, else blank slate (0s) — never show demo data
-  const LIVE_BLANK = { level: 1, xp: 0, xpToNext: 500, name: '', email: '' }
-  const profile  = isDemo ? DEMO_PROFILE : (liveProfile || LIVE_BLANK)
+  const LIVE_BLANK = { level: 1, xp: 0, xpToNext: 500 }
+  const profile = isDemo ? DEMO_PROFILE : (liveProfile || LIVE_BLANK)
   const firstName = user?.given_name || user?.name?.split(' ')[0] || 'Runner'
 
   const openBell = () => {
     const rect = bellRef.current?.getBoundingClientRect()
     if (rect) setBellPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
-    setBellOpen(o => !o)
-    setUserOpen(false)
+    setBellOpen(o => !o); setUserOpen(false)
   }
-
   const openUser = () => {
     const rect = userRef.current?.getBoundingClientRect()
     if (rect) setUserPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
-    setUserOpen(o => !o)
-    setBellOpen(false)
+    setUserOpen(o => !o); setBellOpen(false)
   }
 
   return (
     <div className="nav-stack">
-
-      {/* ── Demo Banner ── */}
       {isDemo && (
         <div className="demo-banner-bar">
-          <span className="demo-banner-dot" aria-hidden="true" />
-          <span className="demo-banner-text">Demo Mode — Mock Data</span>
-          <button className="demo-toggle-btn" onClick={toggleDemo} aria-label="Switch to live mode">
+          <span className="demo-dot" />
+          <span>DEMO MODE</span>
+          <button className="demo-toggle-btn" onClick={toggleDemo} aria-label="Switch to live">
             <span className="demo-knob" />
           </button>
-          <span className="demo-banner-hint">Switch to live</span>
+          <span className="demo-hint">tap to go live</span>
         </div>
       )}
 
-      {/* ── Navbar ── */}
       <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}`}>
         <div className="navbar-inner">
-
           <Link to="/" className="navbar-logo">
             <span className="logo-mark">WL</span>
             <span className="logo-name" data-league="League">Wheezy</span>
           </Link>
 
           {isAuthenticated && (
-            <nav className="navbar-links" aria-label="Main navigation">
-              {NAV_LINKS.map(({ to, label, icon }) => (
+            <nav className="navbar-links">
+              {NAV.map(({ to, label, icon }) => (
                 <Link key={to} to={to} className={`nav-link${isActive(to) ? ' nav-link--active' : ''}`}>
-                  <span aria-hidden="true">{icon}</span>
+                  <span className="nav-icon" aria-hidden="true">{icon}</span>
                   <span className="nav-link-label">{label}</span>
                 </Link>
               ))}
@@ -110,33 +99,26 @@ export default function Navbar() {
           )}
 
           <div className="navbar-actions">
-            {isLoading ? (
-              <div className="nav-spinner" aria-label="Loading" />
-            ) : isAuthenticated ? (
+            {isLoading ? <div className="nav-spinner" /> : isAuthenticated ? (
               <>
-                {/* XP pill */}
-                <div className="nav-xp-pill" aria-label={`Level ${profile.level}`}>
+                <div className="nav-xp-pill">
                   <span className="nav-xp-lv">LV.{profile.level}</span>
-                  <div className="nav-xp-track"><div className="nav-xp-fill" style={{ width: `${(profile.xp / profile.xpToNext) * 100}%` }} /></div>
+                  <div className="nav-xp-track"><div className="nav-xp-fill" style={{ width:`${Math.round((profile.xp/profile.xpToNext)*100)}%` }} /></div>
                 </div>
 
-                {/* Bell — single clean onClick */}
                 <div className="bell-wrap" ref={bellRef}>
-                  <button className="icon-btn" onClick={openBell}
-                    aria-label={`Notifications${unreadCount ? ` — ${unreadCount} unread` : ''}`}
-                    aria-expanded={bellOpen}>
-                    🔔
+                  <button className="icon-btn" onClick={openBell} aria-label="Notifications" aria-expanded={bellOpen}>
+                    <span className="bell-icon">◎</span>
                     {unreadCount > 0 && <span className="icon-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>}
                   </button>
-
                   {bellOpen && (
-                    <div className="floating-panel bell-panel" role="dialog" aria-label="Notifications"
-                      style={{ top: bellPos.top, right: bellPos.right }}>
+                    <div className="floating-panel bell-panel" style={{ top: bellPos.top, right: bellPos.right }}>
                       <div className="panel-header">
-                        <span className="panel-title">Notifications</span>
-                        {unreadCount > 0 && <button className="panel-action" onClick={markAllRead}>Clear all</button>}
+                        <span className="panel-title">ALERTS</span>
+                        {unreadCount > 0 && <button className="panel-action" onClick={markAllRead}>clear all</button>}
                       </div>
                       <div className="notif-list">
+                        {notifications.length === 0 && <p className="notif-empty">No alerts yet</p>}
                         {notifications.map(n => (
                           <button key={n.id} className={`notif-row${n.read ? ' notif-row--read' : ''}`} onClick={() => markRead(n.id)}>
                             <span className="notif-icon-wrap">{n.icon}</span>
@@ -145,7 +127,7 @@ export default function Navbar() {
                               <p className="notif-body">{n.body}</p>
                               <p className="notif-time">{n.time}</p>
                             </div>
-                            {!n.read && <span className="unread-dot" aria-label="Unread" />}
+                            {!n.read && <span className="unread-dot" />}
                           </button>
                         ))}
                       </div>
@@ -153,62 +135,46 @@ export default function Navbar() {
                   )}
                 </div>
 
-                {/* User chip — single clean onClick */}
                 <div className="user-menu-wrap" ref={userRef}>
-                  <button className="user-chip" onClick={openUser}
-                    aria-expanded={userOpen} aria-haspopup="true">
+                  <button className="user-chip" onClick={openUser} aria-expanded={userOpen}>
                     <div className="chip-avatar">
                       {(avatarUrl || user?.picture)
-                        ? <img src={avatarUrl || user.picture} alt={user.name} />
+                        ? <img src={avatarUrl || user.picture} alt={firstName} />
                         : <span>{firstName[0]}</span>}
                     </div>
                     <span className="chip-name">{firstName}</span>
                     <span className={`chip-chevron${userOpen ? ' chip-chevron--open' : ''}`}>▾</span>
                   </button>
-
                   {userOpen && (
-                    <div className="floating-panel user-panel" role="menu"
-                      style={{ top: userPos.top, right: userPos.right }}>
-                      <div className="user-panel-header">
+                    <div className="floating-panel user-panel" style={{ top: userPos.top, right: userPos.right }}>
+                      <div className="upanel-header">
                         <div className="chip-avatar chip-avatar--lg">
-                          {(avatarUrl || user?.picture) ? <img src={avatarUrl || user.picture} alt={user.name} /> : <span>{firstName[0]}</span>}
+                          {(avatarUrl || user?.picture) ? <img src={avatarUrl || user.picture} alt={firstName} /> : <span>{firstName[0]}</span>}
                         </div>
-                        <div className="upanel-info">
-                          <p className="upanel-name">{user?.name || profile.name}</p>
-                          <p className="upanel-email">{user?.email || profile.email}</p>
+                        <div>
+                          <p className="upanel-name">{user?.name || firstName}</p>
+                          <p className="upanel-email">{user?.email}</p>
                         </div>
                       </div>
                       <div className="upanel-xp">
-                        <div className="xp-label-row"><span>LV.{profile.level}</span><span>{profile.xp} / {profile.xpToNext} XP</span></div>
-                        <div className="xp-track"><div className="xp-fill" style={{ width: `${(profile.xp / profile.xpToNext) * 100}%` }} /></div>
+                        <div className="xp-label-row"><span>LV.{profile.level}</span><span>{profile.xp}/{profile.xpToNext} XP</span></div>
+                        <div className="xp-track"><div className="xp-fill" style={{ width:`${Math.round((profile.xp/profile.xpToNext)*100)}%` }} /></div>
                       </div>
                       <div className="panel-divider" />
-                      <Link to="/profile"    className="panel-item" onClick={() => setUserOpen(false)}>👤 My Profile</Link>
-                      <Link to="/dashboard"  className="panel-item" onClick={() => setUserOpen(false)}>📊 Dashboard</Link>
-                      <Link to="/challenges" className="panel-item" onClick={() => setUserOpen(false)}>🏆 Challenges</Link>
-                      {hasRole('admin') && <Link to="/admin" className="panel-item" style={{ color: 'var(--neon-orange)' }} onClick={() => setUserOpen(false)}>⚙️ Admin Panel</Link>}
+                      <Link to="/profile"    className="panel-item" onClick={() => setUserOpen(false)}>My Profile</Link>
+                      <Link to="/dashboard"  className="panel-item" onClick={() => setUserOpen(false)}>Dashboard</Link>
+                      {hasRole('admin') && <Link to="/admin" className="panel-item panel-item--admin" onClick={() => setUserOpen(false)}>Admin Panel</Link>}
                       <div className="panel-divider" />
                       <div className="panel-item panel-item--toggle">
-                        <span>{darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
-                        <button className="mode-toggle-btn" onClick={toggleDark} aria-label="Toggle dark mode">
-                          <span className={`mode-knob${darkMode ? ' mode-knob--dark' : ''}`} />
-                        </button>
+                        <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                        <button className="mode-toggle-btn" onClick={toggleDark}><span className={`mode-knob${darkMode ? ' mode-knob--dark' : ''}`} /></button>
                       </div>
                       <div className="panel-item panel-item--toggle">
-                        <span>{isDemo ? '🎮 Demo Mode' : '🔌 Live Mode'}</span>
-                        <button className="demo-toggle-btn" onClick={toggleDemo} aria-label="Toggle demo/live mode">
-                          <span className={`demo-knob${isDemo ? '' : ' demo-knob--live'}`} />
-                        </button>
+                        <span>{isDemo ? 'Demo Mode' : 'Live Mode'}</span>
+                        <button className="demo-toggle-btn" onClick={toggleDemo}><span className={`demo-knob${isDemo ? '' : ' demo-knob--live'}`} /></button>
                       </div>
                       <div className="panel-divider" />
-                      <div className="panel-item panel-item--version">
-                        <span>The Wheezy League</span><span className="version-tag">v2026.6.0</span>
-                      </div>
-                      <div className="panel-divider" />
-                      <button className="panel-item panel-item--danger"
-                        onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
-                        🚪 Sign Out
-                      </button>
+                      <button className="panel-item panel-item--danger" onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>Sign Out</button>
                     </div>
                   )}
                 </div>
@@ -216,101 +182,60 @@ export default function Navbar() {
             ) : (
               <div className="auth-btns">
                 <button className="btn btn-ghost btn-sm" onClick={() => loginWithRedirect()}>Log In</button>
-                <button className="btn btn-primary btn-sm" onClick={() => loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } })}>Join Free</button>
+                <button className="btn btn-primary btn-sm" onClick={() => loginWithRedirect({ authorizationParams: { screen_hint:'signup' } })}>Join Free</button>
               </div>
             )}
-
-            <button
-              className={`hamburger${mobileOpen ? ' hamburger--open' : ''}`}
-              onClick={() => setMobileOpen(o => !o)}
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={mobileOpen}>
+            <button className={`hamburger${mobileOpen ? ' hamburger--open' : ''}`} onClick={() => setMobileOpen(o => !o)} aria-label="Menu">
               <span /><span /><span />
             </button>
           </div>
         </div>
       </header>
 
-      {/* ── Mobile Drawer ── */}
-      <div className={`mobile-backdrop${mobileOpen ? ' mobile-backdrop--visible' : ''}`}
-        onClick={() => setMobileOpen(false)} aria-hidden="true" />
-
-      <div className={`mobile-drawer${mobileOpen ? ' mobile-drawer--open' : ''}`}
-        role="dialog" aria-label="Navigation menu" aria-modal="true" aria-hidden={!mobileOpen}>
-
+      <div className={`mobile-backdrop${mobileOpen ? ' mobile-backdrop--visible' : ''}`} onClick={() => setMobileOpen(false)} />
+      <div className={`mobile-drawer${mobileOpen ? ' mobile-drawer--open' : ''}`} aria-hidden={!mobileOpen}>
         <div className="drawer-header">
-          <div className="drawer-logo">
-            <span className="logo-mark" style={{ fontSize: '0.65rem', padding: '0.18rem 0.4rem' }}>WL</span>
-            <span>WheezyLeague</span>
-          </div>
-          <button className="drawer-close" onClick={() => setMobileOpen(false)} aria-label="Close menu">✕</button>
+          <span className="logo-mark" style={{ fontSize:'0.65rem', padding:'0.2rem 0.45rem' }}>WL</span>
+          <button className="drawer-close" onClick={() => setMobileOpen(false)}>✕</button>
         </div>
-
         {isAuthenticated && (
           <div className="drawer-user-card">
             <div className="chip-avatar chip-avatar--lg">
-              {(avatarUrl || user?.picture) ? <img src={avatarUrl || user.picture} alt={user.name} /> : <span>{firstName[0]}</span>}
+              {(avatarUrl||user?.picture) ? <img src={avatarUrl||user.picture} alt={firstName}/> : <span>{firstName[0]}</span>}
             </div>
-            <div className="drawer-user-info">
-              <p className="drawer-user-name">{user?.name || profile.name}</p>
-              <p className="drawer-user-email">{user?.email || profile.email}</p>
-              <div className="level-badge" style={{ marginTop: '0.35rem', fontSize: '0.66rem' }}>LV.{profile.level} · {profile.xp} XP</div>
+            <div>
+              <p className="drawer-user-name">{firstName}</p>
+              <p className="drawer-user-email">{user?.email}</p>
+              <p className="level-badge" style={{ marginTop:'0.35rem', fontSize:'0.66rem' }}>LV.{profile.level} · {profile.xp} XP</p>
             </div>
           </div>
         )}
-
         <div className="drawer-scroll">
           {isAuthenticated && (
             <nav className="drawer-nav">
-              {NAV_LINKS.map(({ to, label, icon }) => (
+              {NAV.map(({ to, label, icon }) => (
                 <Link key={to} to={to} className={`drawer-link${isActive(to) ? ' drawer-link--active' : ''}`}>
-                  <span className="drawer-link-icon">{icon}</span>
-                  <span>{label}</span>
-                  {isActive(to) && <span className="drawer-link-pip" aria-hidden="true" />}
+                  <span>{icon}</span><span>{label}</span>
                 </Link>
               ))}
-              {hasRole('admin') && <Link to="/admin" className={`drawer-link${isActive('/admin') ? ' drawer-link--active' : ''}`}><span className="drawer-link-icon">⚙️</span><span>Admin</span></Link>}
-              <Link to="/profile" className={`drawer-link${isActive('/profile') ? ' drawer-link--active' : ''}`}>
-                <span className="drawer-link-icon">👤</span><span>Profile</span>
-              </Link>
+              <Link to="/profile" className={`drawer-link${isActive('/profile') ? ' drawer-link--active' : ''}`}><span>◈</span><span>Profile</span></Link>
+              {hasRole('admin') && <Link to="/admin" className="drawer-link drawer-link--admin"><span>⚙</span><span>Admin</span></Link>}
             </nav>
           )}
-
           <div className="drawer-divider" />
-
-          <nav className="drawer-secondary">
-            <Link to="/about"   className="drawer-link-sm"><span>ℹ️</span>About</Link>
-            <Link to="/contact" className="drawer-link-sm"><span>✉️</span>Contact</Link>
-          </nav>
-
-          <div className="drawer-divider" />
-
           <div className="drawer-toggles">
-            <div className="drawer-toggle-row">
-              <span>{darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
-              <button className="mode-toggle-btn" onClick={toggleDark} aria-label="Toggle dark mode">
-                <span className={`mode-knob${darkMode ? ' mode-knob--dark' : ''}`} />
-              </button>
-            </div>
-            <div className="drawer-toggle-row">
-              <span>{isDemo ? '🎮 Demo' : '🔌 Live'}</span>
-              <button className="demo-toggle-btn" onClick={toggleDemo} aria-label="Toggle demo mode">
-                <span className={`demo-knob${isDemo ? '' : ' demo-knob--live'}`} />
-              </button>
-            </div>
+            <div className="drawer-toggle-row"><span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span><button className="mode-toggle-btn" onClick={toggleDark}><span className={`mode-knob${darkMode ? ' mode-knob--dark' : ''}`} /></button></div>
+            <div className="drawer-toggle-row"><span>{isDemo ? 'Demo Mode' : 'Live Mode'}</span><button className="demo-toggle-btn" onClick={toggleDemo}><span className={`demo-knob${isDemo ? '' : ' demo-knob--live'}`} /></button></div>
           </div>
         </div>
-
         <div className="drawer-footer">
-          {isAuthenticated ? (
-            <button className="btn btn-outline btn-sm" style={{ width: '100%' }}
-              onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>Sign Out</button>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-              <button className="btn btn-outline" style={{ width: '100%' }} onClick={() => loginWithRedirect()}>Log In</button>
-              <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } })}>Join Free</button>
-            </div>
-          )}
+          {isAuthenticated
+            ? <button className="btn btn-outline btn-sm" style={{ width:'100%' }} onClick={() => logout({ logoutParams:{ returnTo: window.location.origin } })}>Sign Out</button>
+            : <div style={{ display:'flex', flexDirection:'column', gap:'.5rem' }}>
+                <button className="btn btn-outline" style={{ width:'100%' }} onClick={() => loginWithRedirect()}>Log In</button>
+                <button className="btn btn-primary" style={{ width:'100%' }} onClick={() => loginWithRedirect({ authorizationParams:{ screen_hint:'signup' } })}>Join Free</button>
+              </div>
+          }
         </div>
       </div>
     </div>

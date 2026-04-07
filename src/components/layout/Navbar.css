@@ -26,9 +26,13 @@
 
 .demo-toggle-btn {
   width:28px; height:14px; border-radius:7px;
-  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25);
+  background:#D1D5DB; border:1px solid #9CA3AF;
   cursor:pointer; position:relative; padding:0; flex-shrink:0;
+  transition: background .2s;
 }
+.demo-toggle-btn:has(.demo-knob:not(.demo-knob--live)) { background: #F59E0B; border-color: #D97706; }
+.dark .demo-toggle-btn { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.25); }
+.dark .demo-toggle-btn:has(.demo-knob:not(.demo-knob--live)) { background: rgba(255,210,63,0.4); border-color: rgba(255,210,63,0.6); }
 .demo-knob {
   position:absolute; top:1px; left:1px;
   width:10px; height:10px; border-radius:50%; background:#fff;
@@ -445,3 +449,12 @@
 .panel-item--version { opacity: 0.45; cursor: default; font-size: .66rem; justify-content: space-between; }
 .panel-item--version:hover { background: none; color: inherit; }
 .version-tag { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .06em; color: var(--neon-orange); }
+
+.notif-empty { font-size:.78rem; color:var(--text-4); padding:1rem; text-align:center; font-family:var(--font-mono); }
+
+.panel-item--admin { color:var(--neon-orange); }
+
+.bell-icon { font-size:1rem; line-height:1; }
+
+.demo-dot { width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.8; }
+.demo-hint { font-size:.6rem;opacity:.55; }
