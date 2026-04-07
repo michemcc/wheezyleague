@@ -39,7 +39,7 @@ function PendingBanner() {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth0()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth0()
   const { getToken } = useAuth()
   const { isDemo } = useDemo()
   const [data,         setData]         = useState(null)
@@ -63,15 +63,22 @@ export default function DashboardPage() {
   const aqi = useAqi(isDemo ? 'Boston, MA' : userLocation)
 
   useEffect(() => {
+    if (!isDemo && (authLoading || !isAuthenticated)) return
     setLoading(true)
-    getDashboard(user?.sub || 'demo', isDemo)
-      .then(d => {
-        setData(d)
+    const load = async () => {
+      try {
+        const token = isDemo ? null : await getToken().catch(() => null)
+        const d = await getDashboard(user?.sub || 'demo', isDemo, token)
+        setData(d || {})
         setLogEntries(d?.inhalerLog || [])
-      })
-      .catch(() => setData(null))
-      .finally(() => setLoading(false))
-  }, [isDemo, user?.sub])
+      } catch {
+        setData({})
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [isDemo, user?.sub, authLoading, isAuthenticated])
 
   const handleAddLog = (e) => {
     e.preventDefault()

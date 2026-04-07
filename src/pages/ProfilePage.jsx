@@ -7,9 +7,9 @@ import useAqi from '../hooks/useAqi'
 import './ProfilePage.css'
 
 export default function ProfilePage() {
-  const { user } = useAuth0()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth0()
   const { getToken } = useAuth()
-  const { isDemo, setAvatarUrl } = useDemo()
+  const { isDemo, setAvatarUrl, toggleDemo } = useDemo()
   const [profile, setProfile] = useState(null)
   const [editing, setEditing]   = useState(false)
   const [saving,  setSaving]    = useState(false)
@@ -20,15 +20,45 @@ export default function ProfilePage() {
   const formTopRef   = useRef(null)
 
   useEffect(() => {
+    // In demo mode: load immediately with mock data
+    if (isDemo) {
+      getProfile('demo', true, null).then(p => {
+        if (p) { setProfile(p); setForm(p) }
+      })
+      return
+    }
+    // In live mode: wait until Auth0 has finished loading
+    if (authLoading) return
+    if (!isAuthenticated || !user?.sub) return
+
     const loadProfile = async () => {
       try {
-        const token = isDemo ? null : await getToken().catch(() => null)
-        const p = await getProfile(user?.sub || 'demo', isDemo, token)
-        if (p) { setProfile(p); setForm(p) }
-      } catch (e) { console.error('Profile load error:', e) }
+        const token = await getToken().catch(() => null)
+        const p = await getProfile(user.sub, false, token)
+        if (p) {
+          setProfile(p)
+          setForm(p)
+        } else {
+          // Backend unreachable — show fallback so page doesn't spin forever
+          setProfile({ 
+            id: user.sub,
+            name: user.name || 'Runner',
+            username: user.email?.split('@')[0] || 'runner',
+            email: user.email || '',
+            bio: '', city: '', badge: 'Newbie', badgeIcon: '🏅',
+            level: 1, xp: 0, xpToNext: 500, points: 0,
+            totalMiles: 0, totalRuns: 0, longestRun: 0,
+            favoritePace: '—', streak: 0, bestStreak: 0,
+            joinedDate: 'Just now', achievements: [],
+            _offline: true,
+          })
+        }
+      } catch (e) {
+        console.error('Profile load error:', e)
+      }
     }
     loadProfile()
-  }, [user, isDemo])
+  }, [user?.sub, isDemo, authLoading, isAuthenticated])
 
   // Scroll to top of form when editing starts
   useEffect(() => {
@@ -103,6 +133,19 @@ export default function ProfilePage() {
 
   return (
     <div className="page-container profile-page" ref={formTopRef}>
+
+      {/* ── Offline notice ── */}
+      {profile._offline && (
+        <div className="profile-offline-banner">
+          <span>⚠️</span>
+          <div>
+            <strong>Backend not connected</strong>
+            <p>Your profile is showing basic info from your login. 
+               <button className="link-btn" onClick={toggleDemo}> Switch to demo mode</button> to explore all features, 
+               or check your backend is running.</p>
+          </div>
+        </div>
+      )}
 
       {/* ── Hero banner ── */}
       <div className="profile-hero">

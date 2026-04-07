@@ -194,6 +194,12 @@ export default function Navbar() {
                           <span className={`mode-knob${darkMode ? ' mode-knob--dark' : ''}`} />
                         </button>
                       </div>
+                      <div className="panel-item panel-item--toggle">
+                        <span>{isDemo ? '🎮 Demo Mode' : '🔌 Live Mode'}</span>
+                        <button className="demo-toggle-btn" onClick={toggleDemo} aria-label="Toggle demo/live mode">
+                          <span className={`demo-knob${isDemo ? '' : ' demo-knob--live'}`} />
+                        </button>
+                      </div>
                       <div className="panel-divider" />
                       <div className="panel-item panel-item--version">
                         <span>The Wheezy League</span><span className="version-tag">v2026.6.0</span>
