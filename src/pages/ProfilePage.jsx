@@ -70,17 +70,23 @@ export default function ProfilePage() {
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true)
-    const payload = avatarPreview ? { ...form, avatarPreview } : form
-    const token   = isDemo ? null : await getToken().catch(() => null)
-    const updated = await updateProfile(user?.sub || 'demo', payload, isDemo, token)
-    setProfile(updated)
-    setSaving(false)
-    setEditing(false)
-    setSaved(true)
-    // Sync avatar to navbar
-    if (avatarPreview) setAvatarUrl(avatarPreview)
-    setTimeout(() => setSaved(false), 2500)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    try {
+      const payload = avatarPreview ? { ...form, avatarPreview } : form
+      const token   = isDemo ? null : await getToken().catch(() => null)
+      const updated = await updateProfile(user?.sub || 'demo', payload, isDemo, token)
+      if (updated) {
+        setProfile(updated)
+        if (avatarPreview) setAvatarUrl(avatarPreview)
+      }
+      setEditing(false)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (err) {
+      console.error('Profile save error:', err)
+    } finally {
+      setSaving(false)  // always unblock the button
+    }
   }
 
   // Avatar is ALWAYS clickable — no need to be in edit mode

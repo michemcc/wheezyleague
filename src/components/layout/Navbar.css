@@ -12,16 +12,21 @@
 
 /* ── Demo banner ─────────────────────────────────── */
 .demo-banner-bar {
-  display: flex; align-items: center; justify-content: center; gap: 0.55rem;
-  padding: 0.28rem clamp(1rem, 3vw, 2rem);
-  font-size: 0.7rem; font-weight: 600;
-  min-height: 26px; white-space: nowrap;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  padding: 0.3rem clamp(1rem, 3vw, 2rem);
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  min-height: 28px; white-space: nowrap;
+  /* Demo banner — always amber/gold, always readable */
+  background: #92400E;
+  color: #FEF3C7;
+  border-bottom: 2px solid #D97706;
 }
 .demo-banner-bar--demo { background: #1C1A0A; color: #FFD23F; border-bottom: 1px solid rgba(255,210,63,0.3); }
 .demo-banner-bar--live { background: #0A0F1C; color: #00D4FF; border-bottom: 1px solid rgba(0,212,255,0.25); }
-.demo-banner-dot  { width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.7; animation:livePulse 2s infinite; flex-shrink:0; }
-.demo-banner-text { font-weight:700; font-family: var(--font-mono); letter-spacing: 0.06em; }
-.demo-banner-hint { font-size:.62rem; opacity:.6; display:none; }
+.demo-banner-dot  { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.demo-banner-text { font-weight:700; }
+.demo-banner-hint { font-size:.6rem; opacity:.7; display:none; }
 @media (min-width:520px) { .demo-banner-hint { display:block; } }
 
 .demo-toggle-btn {
@@ -229,11 +234,11 @@
 }
 
 .bell-panel { width: min(320px, 92vw); }
-.user-panel { min-width: 220px; max-width: min(260px, 88vw); }
+.user-panel { min-width: 240px; max-width: min(280px, 90vw); }
 
 .panel-header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: .8rem 1rem .65rem;
+  padding: .75rem 1.1rem .6rem;
   border-bottom: 1px solid #E5E7EB;
   background: #F9FAFB;
 }
@@ -267,28 +272,29 @@
 .unread-dot      { width:7px; height:7px; border-radius:50%; background:var(--neon-orange); flex-shrink:0; margin-top:.3rem; animation:livePulse 2s infinite; }
 
 /* User panel */
-.user-panel-header {
-  display:flex; align-items:center; gap:.75rem;
-  padding:.9rem 1rem; border-bottom:1px solid #E5E7EB;
+.upanel-header {
+  display:flex; align-items:center; gap:.8rem;
+  padding:1rem 1.1rem .9rem; border-bottom:1px solid #E5E7EB;
   background: #F9FAFB;
 }
-.dark .user-panel-header { border-color: rgba(0,212,255,0.1); background: rgba(255,255,255,0.03); }
+.dark .upanel-header { border-color: rgba(0,212,255,0.1); background: rgba(255,255,255,0.03); }
 .upanel-info  { min-width:0; }
 .upanel-name  { font-family:var(--font-display); font-size:.9rem; font-weight:700; color:#111827; letter-spacing:.05em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .dark .upanel-name { color: #EBF0FF; }
 .upanel-email { font-size:.66rem; color:#6B7280; font-family:var(--font-mono); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:155px; }
 .dark .upanel-email { color: rgba(235,240,255,0.45); }
-.upanel-xp    { padding:.65rem 1rem .5rem; border-bottom:1px solid #E5E7EB; }
+.upanel-xp    { padding:.7rem 1.1rem .6rem; border-bottom:1px solid #E5E7EB; }
 .dark .upanel-xp { border-color: rgba(0,212,255,0.1); }
 .panel-divider { height:1px; background:#E5E7EB; }
 .dark .panel-divider { background: rgba(255,255,255,0.08); }
 
 .panel-item {
   display:flex; align-items:center; gap:.5rem;
-  width:100%; padding:.62rem 1rem;
+  width:100%; padding:.72rem 1.1rem;
   background:none; border:none;
-  font-family:var(--font-display); font-size:.74rem; letter-spacing:.05em; text-transform:uppercase;
+  font-family:var(--font-mono); font-size:.7rem; letter-spacing:.06em; text-transform:uppercase;
   color:#374151; cursor:pointer; transition:background var(--dur-fast); text-decoration:none;
+  white-space:nowrap;
 }
 .dark .panel-item { color: rgba(235,240,255,0.65); }
 .panel-item:hover { background:#F3F4F6; color:var(--neon-orange); }
