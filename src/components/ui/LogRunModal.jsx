@@ -25,11 +25,15 @@ const MMR_CLIENT_ID     = import.meta.env.VITE_MAPMYRUN_CLIENT_ID || ''
 
 function pad(n) { return String(n).padStart(2, '0') }
 
-export default function LogRunModal({ onClose, onSave }) {
+export default function LogRunModal({ onClose, onSave, initialTab = 'manual' }) {
   const { getAccessTokenSilently } = useAuth0()
-  const [tab,     setTab]     = useState('manual')
+  const [tab,     setTab]     = useState(initialTab)
   const [saving,  setSaving]  = useState(false)
   const [success, setSuccess] = useState(false)
+  const [stravaConnected,   setStravaConnected]   = useState(false)
+  const [stravaActivities,  setStravaActivities]  = useState([])
+  const [stravaLoading,     setStravaLoading]      = useState(false)
+  const [stravaError,       setStravaError]        = useState('')
   const overlayRef = useRef(null)
 
   const [form, setForm] = useState({
@@ -65,6 +69,13 @@ export default function LogRunModal({ onClose, onSave }) {
     document.addEventListener('keydown', fn)
     return () => document.removeEventListener('keydown', fn)
   }, [onClose])
+
+  // Auto-load Strava runs when modal opens directly on Strava tab
+  useEffect(() => {
+    if (initialTab === 'strava' && !stravaConnected) {
+      fetchStravaActivities()
+    }
+  }, [initialTab])
 
   const handleSave = async (e) => {
     e.preventDefault()
@@ -247,26 +258,50 @@ export default function LogRunModal({ onClose, onSave }) {
         {/* ══ STRAVA ══ */}
         {tab === 'strava' && (
           <div className="integration-body">
-            {stravaConnected && stravaActivities.length > 0 ? (
+
+            {/* Loading */}
+            {stravaLoading && (
+              <div className="strava-loading-state">
+                <div className="strava-spinner" />
+                <p>Loading your Strava runs…</p>
+              </div>
+            )}
+
+            {/* Error */}
+            {!stravaLoading && stravaError && (
+              <div className="strava-error-state">
+                <p className="strava-error-msg">{stravaError}</p>
+                <div className="int-btn-row">
+                  <button className="btn int-connect-btn strava-btn" onClick={connectStrava}>🟠 Reconnect Strava</button>
+                  <button className="btn btn-ghost btn-sm" onClick={fetchStravaActivities}>Retry</button>
+                </div>
+              </div>
+            )}
+
+            {/* Activities list */}
+            {!stravaLoading && !stravaError && stravaConnected && stravaActivities.length > 0 && (
               <>
-                <div className="int-connected-header">
-                  <span className="int-logo strava-color">🟠</span>
+                <div className="strava-header-row">
                   <div>
-                    <strong>Strava Connected</strong>
-                    <p>Select a run to import it as today's log entry.</p>
+                    <span className="strava-badge">🟠 Strava Connected</span>
+                    <p className="strava-header-hint">Tap a run to fill in the log form</p>
                   </div>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setStravaConnected(false)}>Disconnect</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => { setStravaConnected(false); setStravaActivities([]) }}>Disconnect</button>
                 </div>
                 <div className="strava-activities">
                   {stravaActivities.map(a => {
-                    const dist = (a.distance / 1000 * 0.621371).toFixed(2)
-                    const pace = a.moving_time && a.distance
-                      ? `${Math.floor(a.moving_time / a.distance * 1609 / 60)}:${String(Math.round(a.moving_time / a.distance * 1609 % 60)).padStart(2,'0')}/mi`
+                    const km      = a.distance / 1000
+                    const mi      = km * 0.621371
+                    const distStr = mi.toFixed(2)
+                    const secsPerMi = a.moving_time / mi
+                    const paceStr = mi > 0 && a.moving_time > 0
+                      ? `${Math.floor(secsPerMi / 60)}:${String(Math.round(secsPerMi % 60)).padStart(2,'0')}/mi`
                       : ''
+                    const dateStr = new Date(a.start_date_local).toLocaleDateString('en-US', { month:'short', day:'numeric' })
                     return (
                       <button key={a.id} className="strava-activity-row" onClick={() => {
                         setForm(f => ({ ...f,
-                          distMi:    dist,
+                          distMi:    distStr,
                           durationH: String(Math.floor(a.moving_time / 3600)),
                           durationM: String(Math.floor((a.moving_time % 3600) / 60)).padStart(2, '0'),
                           durationS: String(a.moving_time % 60).padStart(2, '0'),
@@ -275,54 +310,46 @@ export default function LogRunModal({ onClose, onSave }) {
                         }))
                         setTab('manual')
                       }}>
-                        <span className="strava-act-name">{a.name}</span>
-                        <span className="strava-act-stats">{dist} mi · {pace}</span>
-                        <span className="strava-act-date">{new Date(a.start_date_local).toLocaleDateString()}</span>
+                        <div className="strava-act-main">
+                          <span className="strava-act-name">{a.name}</span>
+                          <span className="strava-act-meta">{dateStr}</span>
+                        </div>
+                        <div className="strava-act-stats">
+                          <span>{distStr} mi</span>
+                          {paceStr && <span>{paceStr}</span>}
+                        </div>
+                        <span className="strava-act-arrow">→</span>
                       </button>
                     )
                   })}
                 </div>
               </>
-            ) : stravaLoading ? (
-              <div className="int-loading">Loading your Strava runs…</div>
-            ) : (
+            )}
+
+            {/* Not connected yet */}
+            {!stravaLoading && !stravaError && !stravaConnected && (
               <>
                 <div className="int-hero">
                   <span className="int-logo strava-color">🟠</span>
-                  <h3>Connect Strava</h3>
-                  <p>Import your runs automatically. Activities sync in real time and count toward challenges.</p>
+                  <h3>Import from Strava</h3>
+                  <p>Connect once, then pick any recent run to auto-fill the log form.</p>
                 </div>
                 {STRAVA_CLIENT_ID ? (
-                  <>
-                    <div className="int-features">
-                      {[
-                        { icon:'✅', t:'Auto-validated',  d:'Runs count toward challenges the moment they sync.' },
-                        { icon:'📊', t:'Full stats',       d:'Distance, pace, elevation and HR all imported.' },
-                        { icon:'🔒', t:'Read-only',        d:'We never post to or modify your Strava account.' },
-                      ].map(f => (
-                        <div key={f.t} className="int-feature">
-                          <span>{f.icon}</span>
-                          <div><strong>{f.t}</strong><p>{f.d}</p></div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="int-btn-row">
-                      <button className="btn int-connect-btn strava-btn" onClick={connectStrava}>
-                        🟠 Connect with Strava
-                      </button>
-                      <button className="btn btn-ghost btn-sm" onClick={fetchStravaActivities}>
-                        Already connected? Load runs
-                      </button>
-                    </div>
-                    <p className="int-note">You'll be taken to Strava to authorise read-only access, then returned here.</p>
-                  </>
-                ) : (
-                  <div className="int-not-configured">
-                    <p>Strava isn't configured on this server.</p>
+                  <div className="int-btn-col">
+                    <button className="btn int-connect-btn strava-btn" onClick={connectStrava}>
+                      🟠 Connect with Strava
+                    </button>
+                    <button className="btn btn-ghost btn-sm" onClick={fetchStravaActivities}>
+                      Already connected — load runs
+                    </button>
+                    <p className="int-note">You'll authorise on Strava, then land back here with your runs ready.</p>
                   </div>
+                ) : (
+                  <p className="int-not-configured">Strava not configured — add VITE_STRAVA_CLIENT_ID to your environment.</p>
                 )}
               </>
             )}
+
           </div>
         )}
 

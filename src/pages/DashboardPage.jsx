@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
+import { useSearchParams } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
 import { useDemo } from '../context/DemoContext'
 import { getDashboard, getProfile } from '../services/dataService'
@@ -44,10 +45,22 @@ export default function DashboardPage() {
   const { isDemo } = useDemo()
   const [data,         setData]         = useState(null)
   const [loading,      setLoading]      = useState(true)
-  const [logRunOpen,   setLogRunOpen]   = useState(false)
+  const [logRunOpen,    setLogRunOpen]   = useState(false)
+  const [initialTab,    setInitialTab]   = useState('manual')
+  const [searchParams,  setSearchParams] = useSearchParams()
   const [logEntry,     setLogEntry]     = useState('')
   const [logEntries,   setLogEntries]   = useState([])
   const [userLocation, setUserLocation] = useState('')
+
+  // Auto-open Log Run modal on Strava tab after OAuth callback
+  useEffect(() => {
+    if (searchParams.get('openStrava') === '1') {
+      setInitialTab('strava')
+      setLogRunOpen(true)
+      // Clean up the URL param without triggering a reload
+      setSearchParams({}, { replace: true })
+    }
+  }, [])
 
   // Load user's saved location for AQI
   useEffect(() => {
@@ -281,8 +294,9 @@ export default function DashboardPage() {
       {/* Log Run modal — rendered at page root, never inside child components */}
       {logRunOpen && (
         <LogRunModal
-          onClose={() => setLogRunOpen(false)}
-          onSave={() => setLogRunOpen(false)}
+          initialTab={initialTab}
+          onClose={() => { setLogRunOpen(false); setInitialTab('manual') }}
+          onSave={() => { setLogRunOpen(false); setInitialTab('manual') }}
         />
       )}
 

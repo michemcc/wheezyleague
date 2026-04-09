@@ -67,8 +67,8 @@ export default function StravaCallbackPage() {
 
         const data = await res.json()
         setStatus('success')
-        setMessage(`Connected as ${data.athlete?.firstname || 'Strava user'}! Redirecting…`)
-        setTimeout(() => navigate('/dashboard', { replace: true }), 1800)
+        setMessage(`Connected as ${data.athlete?.firstname || 'Strava user'}! Loading your runs…`)
+        setTimeout(() => navigate('/dashboard?openStrava=1', { replace: true }), 1200)
       } catch (err) {
         setStatus('error')
         setMessage(err.message || 'Connection failed. Please try again from the Log Run modal.')
