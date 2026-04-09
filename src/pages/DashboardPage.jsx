@@ -53,12 +53,42 @@ export default function DashboardPage() {
   const [userLocation, setUserLocation] = useState('')
 
   // Auto-open Log Run modal on Strava tab after OAuth callback
+  // Also exchange the pending Strava code if one was stashed
   useEffect(() => {
-    if (searchParams.get('openStrava') === '1') {
+    if (searchParams.get('openStrava') !== '1') return
+
+    // Clean URL immediately
+    setSearchParams({}, { replace: true })
+
+    const pendingCode = sessionStorage.getItem('strava_pending_code')
+    if (pendingCode) {
+      sessionStorage.removeItem('strava_pending_code')
+      // Exchange the code in the background — user is authenticated here
+      const doExchange = async () => {
+        try {
+          const token = await getToken()
+          const res = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL ?? '/api'}/strava/connect`,
+            {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code: pendingCode }),
+            }
+          )
+          if (!res.ok) console.error('Strava exchange failed:', await res.json().catch(() => ({})))
+          // Whether it worked or not, open the modal — LogRunModal will fetch activities
+        } catch (e) {
+          console.error('Strava exchange error:', e)
+        } finally {
+          setInitialTab('strava')
+          setLogRunOpen(true)
+        }
+      }
+      doExchange()
+    } else {
+      // No pending code — just open the modal on Strava tab
       setInitialTab('strava')
       setLogRunOpen(true)
-      // Clean up the URL param without triggering a reload
-      setSearchParams({}, { replace: true })
     }
   }, [])
 
